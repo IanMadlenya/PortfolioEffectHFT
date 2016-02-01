@@ -19,6 +19,7 @@ setMethod ("show" , "portfolio" ,
 			r<-rbind(r,c('Portfolio factor model ',		set$factorModel))
 			r<-rbind(r,c('Density model ',       		set$densityModel))
 			r<-rbind(r,c('Drift term enabled ',        	set$driftTerm))
+			r<-rbind(r,c('Results NA filter ',        	set$resultsNAFilter))
 			r<-rbind(r,c('Results sampling interval ',	set$resultsSamplingInterval))
 			r<-rbind(r,c('Input sampling interval ',	set$inputSamplingInterval))
 			r<-rbind(r,c('Transaction cost per share ',	set$txnCostPerShare))
@@ -71,7 +72,11 @@ setMethod ("show" , "portfolio" ,
 util_summaryPlot<-function (x,y){	
 util_summary(x)
 }
+#util_summaryPlotBW<-function (x,y){	
+#	util_summary(x,bw=y)
+#}
 setMethod("plot" ,c(x="portfolio",y="missing"),util_summaryPlot)
+#setMethod("plot" ,c(x="portfolio",y='logical'),util_summaryPlotBW)
 
 portfolio_defaultSettings<-function(portfolio){
 	portfolio_settings(portfolio,portfolioMetricsMode="portfolio",
@@ -84,8 +89,9 @@ portfolio_defaultSettings<-function(portfolio){
 				factorModel = "sim",
 				densityModel="GLD",
 				driftTerm=FALSE,
+				resultsNAFilter= TRUE,
 				resultsSamplingInterval = "1s",
-				inputSamplingInterval="none",
+				inputSamplingInterval="1s",
 				timeScale="1d",
 				txnCostPerShare=0,
 				txnCostFixed=0)
@@ -103,7 +109,7 @@ portfolio_settings<-function(
 								"shortSalesMode","jumpsModel","noiseModel", "fractalPriceModel",             
 								"factorModel","resultsSamplingInterval","inputSamplingInterval",  
 								"timeScale","driftTerm","txnCostPerShare",        
-								"txnCostFixed","densityModel" ))){
+								"txnCostFixed","densityModel",'resultsNAFilter' ))){
 				stopMessage('WRONG_SETTINGS_ARGUMENTS')
 			}
 		if(names(change[i]) %in% c( 'fractalPriceModel','holdingPeriodsOnly','noiseModel','resultsSamplingInterval','inputSamplingInterval','driftTerm','densityModel')){
@@ -138,7 +144,11 @@ portfolio_settings<-function(
 }
 change[removeList]<-NULL
 for(i in 1:length(change)){
+	if(names(change[i]) %in% 	c( 'resultsNAFilter')){
+		.jcall(portfolio@java,returnSig="V", method="setNaNFiltered",as.logical(change[i]))
+	}else{
 	.jcall(portfolio@java,returnSig="V", method="setParam",names(change[i]),paste(change[[i]]))
+}
 }
 }
 
@@ -172,6 +182,7 @@ portfolio_getSettings<-function(portfolio){
 	temp$noiseModel<-as.logical(.jcall(portfolio@java,returnSig="S", method="getParam","isNoiseModelEnabled"))
 	temp$fractalPriceModel<-as.logical(.jcall(portfolio@java,returnSig="S", method="getParam","isNoiseModelEnabled"))
 	temp$factorModel<-.jcall(portfolio@java,returnSig="S", method="getParam","factorModel")
+	temp$resultsNAFilter<-.jcall(portfolio@java,returnSig="Z", method="isNaNFiltered")
 	temp$resultsSamplingInterval<-.jcall(portfolio@java,returnSig="S", method="getParam","samplingInterval")
 	temp$inputSamplingInterval<-.jcall(portfolio@java,returnSig="S", method="getParam","priceSamplingInterval")
 	temp$timeScale<-.jcall(portfolio@java,returnSig="S", method="getParam","timeScale")
@@ -263,7 +274,6 @@ setMethod("portfolio_addPosition" ,c(portfolio="portfolio",symbol="character",qu
 	if(!is.numeric(time)){
 		time<-util_dateToPOSIXTime(time)
 	}
-			time<-util_dateToPOSIXTime(time)
 			result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/MethodResult;", method="addPosition",symbol, as.double(priceData[,2]),.jlong(priceData[,1]), as.integer(quantity),.jlong(time))
 			util_checkErrors(result)
 		})
