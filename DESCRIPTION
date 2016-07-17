@@ -1,8 +1,8 @@
 Package: PortfolioEffectHFT
 Type: Package
 Title: High Frequency Portfolio Analytics by PortfolioEffect
-Version: 1.5
-Date: 2016-01-31
+Version: 1.6
+Date: 2016-07-15
 URL: https://www.portfolioeffect.com/
 Depends: R (>= 2.13.2), ggplot2 (>= 2.0.0)
 Imports: methods, rJava, grid
@@ -66,4 +66,4 @@ Author: Aleksey Zemnitskiy [aut, cre],
   Google, Inc. [ctb, cph] (GSON library),
   Free Software Foundation [ctb, cph] (GNU Trove and GNU Crypto
     libraries)
-Date/Publication: 2016-02-01 22:02:42
+Date/Publication: 2016-07-17 16:21:37

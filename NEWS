@@ -1,3 +1,10 @@
+PortfolioEffectHFT v1.6 (Release date: 2016-07-15)
+==============
+
+Changes:
+
+* Fixed a problem in vignettes that was preventing the package from building on Linux
+
 PortfolioEffectHFT v1.5 (Release date: 2016-02-01)
 ==============
 
