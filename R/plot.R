@@ -315,10 +315,8 @@ setMethod("+", signature(e1 = "portfolioPlot", e2 = "portfolioPlot"), function(e
 
 
 
-util_summary<-function(portfolio,bw=FALSE){
-
-	portfolioTemp=portfolio_create(portfolio)
-	set<-portfolio_getSettings(portfolioTemp)
+util_summaryPosition<-function(position,bw=FALSE){
+  util_validate()
 	Layout <- grid.layout(nrow = 4, ncol = 4,
 			widths = unit(c(2, 2, 2,2.27), array("null",dim=4)), 
 			heights = unit(c(array(3,dim=2),2.5,3.19), array("null",dim=4)))
@@ -326,94 +324,116 @@ util_summary<-function(portfolio,bw=FALSE){
 	grid.newpage()
 	pushViewport(viewport(layout = Layout))
 	
-		tempSet<-set
-		symbols<-portfolio_symbols(portfolioTemp)
-	.jcall(portfolioTemp@java,returnSig="V", method="createCallGroup",as.integer(2))
-	portfolio_startBatch(portfolioTemp)
-	portfolio_value(portfolioTemp)
-	portfolio_expectedReturn(portfolioTemp)
-	portfolio_variance(portfolioTemp)
-	portfolio_endBatch(portfolioTemp)
+	temp=compute(value(position),weight(position),expected_return(position),variance(position))
 	
-	p1<-util_ggplot(util_plot2d(portfolio_value(portfolioTemp),title='Portfolio value ($)',bw=bw))
-	p4<-util_ggplot(util_plot2d(portfolio_expectedReturn(portfolioTemp),title="Portfolio Expected Return",bw=bw))+geom_hline(yintercept=0,col='red',size=0.5)
-	p5<-util_ggplot(util_plot2d(portfolio_variance(portfolioTemp),title="Portfolio Variance",bw=bw))
+	p1<-util_ggplot(plot(value(position),title='Position value ($)',bw=bw))
+	p2<-util_ggplot(plot(weight(position),title='Position weight (%)',bw=bw))
+	p3<-util_ggplot(plot(expected_return(position),title="Position Expected Return",bw=bw))+geom_hline(yintercept=0,col='red',size=0.5)
+	p4<-util_ggplot(plot(variance(position),title="Position Variance",bw=bw))
 
-	tempSet$resultsSamplingInterval='last'
-	portfolio_settings(portfolioTemp,tempSet)
-	
-
-	printMatrix1<-matrix(0,ncol=2,nrow=length(symbols))
-	
-	portfolio_startBatch(portfolioTemp)
-	for(symbol in symbols){
-		position_weight(portfolioTemp,symbol)
-		position_profit(portfolioTemp,symbol)
-	}
-	if(length(symbols)>5){
-	portfolio_profit(portfolioTemp)
-}
-	portfolio_endBatch(portfolioTemp)
-	
-	
-	
-	j<-1
-	for(symbol in symbols){
-		printMatrix1[j,1]<-round(position_weight(portfolioTemp,symbol)[2]*100,digits =3)
-		printMatrix1[j,2]<-round(position_profit(portfolioTemp,symbol)[2],digits =3)
-		j<-j+1		}
-	rownames(printMatrix1)=symbols
-	
-	if(length(symbols)>1){
-	symbols<-symbols[order(printMatrix1[,1],decreasing=TRUE)]
-	printMatrix<-printMatrix1[symbols,]
-	}else{
-		printMatrix<-printMatrix1
-	}
-	
-	if(length(symbols)>5){
-		symbols<-c(symbols[1:4],"Other")
-		printMatrix1<-printMatrix1[symbols[1:4],]
-		other<-c(0,0)
-		other[1]<-100-sum(printMatrix1[1:4,1])
-		other[2]<-round(portfolio_profit(portfolioTemp)[2],digits =3)-sum(printMatrix1[,2])
-		printMatrix1<-rbind(printMatrix1,other)
-	}
-	
-	result3<-data.frame(data=printMatrix[,1],symbols=symbols,legend="Time2")
-	
-	
-	p2<-ggplot(data=result3, aes_string(x='symbols',y='data')) + geom_bar(stat="identity",position="dodge",fill="#01526D")+ coord_flip() +
-			scale_y_continuous(labels = per_for())+
-			xlab(NULL) + 
-			ylab(NULL) +
-			xlim(rev(symbols))+
-			ggtitle('Position Weight (%)')+util_plotTheme(axis.text.size=1.5,bw=bw) 
-	
-	
-	
-	result4<-data.frame(data=printMatrix[,2],symbols=symbols,legend="Time2")
-	
-	
-	p3<-ggplot(data=result4, aes_string(x='symbols',y='data')) + geom_bar(stat="identity",position="dodge",fill="#00A3DC")+ coord_flip() +
-#			scale_y_continuous(labels = per_for(2))+
-	        xlab(NULL) + 
-			ylab(NULL) +
-			xlim(rev(symbols))+
-			ggtitle('Position Profit ($)')+util_plotTheme(axis.text.size=1.5,bw=bw) + scale_fill_brewer()
-	
-	portfolio_settings(portfolioTemp,set)
 	
 	print(p1, vp = viewport(layout.pos.row = 1,
 					layout.pos.col = 1:4))
 	print(p2, vp = viewport(layout.pos.row = 2,
-					layout.pos.col = 1:2))
-	print(p3, vp = viewport(layout.pos.row = 2,
-					layout.pos.col = 3:4))
-	print(p4, vp = viewport(layout.pos.row = 3,
 					layout.pos.col = 1:4))
-	print(p5, vp = viewport(layout.pos.row = 4,
+	print(p3, vp = viewport(layout.pos.row = 3,
 					layout.pos.col = 1:4))
+	print(p4, vp = viewport(layout.pos.row = 4,
+					layout.pos.col = 1:4))
+}
+
+util_summary<-function(portfolio,bw=FALSE){
+  util_validate()
+  portfolioTemp=portfolio_create(portfolio)
+  set<-portfolio_getSettings(portfolioTemp)
+  Layout <- grid.layout(nrow = 4, ncol = 4,
+                        widths = unit(c(2, 2, 2,2.27), array("null",dim=4)), 
+                        heights = unit(c(array(3,dim=2),2.5,3.19), array("null",dim=4)))
+  
+  grid.newpage()
+  pushViewport(viewport(layout = Layout))
+  
+  tempSet<-set
+  symbols<-position_list(portfolioTemp)
+  .jcall(portfolioTemp@java,returnSig="V", method="createCallGroup",as.integer(1+length(symbols)))
+  temp=compute(value(portfolioTemp),	expected_return(portfolioTemp),variance(portfolioTemp))
+  
+  p1<-util_ggplot(plot(value(portfolioTemp),title='Portfolio value ($)',bw=bw))
+  p4<-util_ggplot(plot(expected_return(portfolioTemp),title="Portfolio Expected Return",bw=bw))+geom_hline(yintercept=0,col='red',size=0.5)
+  p5<-util_ggplot(plot(variance(portfolioTemp),title="Portfolio Variance",bw=bw))
+  
+  tempSet$resultsSamplingInterval='last'
+  portfolio_settings(portfolioTemp,tempSet)
+  
+  
+  
+  positions=portfolioTemp@java$getPositions()
+  symbols=array('1',dim=length(positions))
+  printMatrix1<-matrix(0,ncol=2,nrow=length(symbols))
+  for(i in 1:length(positions)){
+    positionTemp=new('position',java=positions[[i]],symbol=positions[[i]]$getName(),portfolio=positions[[i]]$getPortfolio())
+    symbols[i]=positionTemp@symbol
+    tempPosition=compute(weight(positionTemp),profit(positionTemp))
+    printMatrix1[i,1]<-tempPosition[[1]][2]
+    printMatrix1[i,2]<-round(tempPosition[[2]][2],digits =1)
+  }
+  
+  if(length(symbols)>5){
+    compute(profit(portfolioTemp))
+  }
+  
+  rownames(printMatrix1)=symbols
+  
+  if(length(symbols)>1){
+    symbols<-symbols[order(printMatrix1[,1],decreasing=TRUE)]
+    printMatrix<-printMatrix1[symbols,]
+  }else{
+    printMatrix<-printMatrix1
+  }
+  
+  if(length(symbols)>5){
+    symbols<-c(symbols[1:4],"Other")
+    printMatrix1<-printMatrix1[symbols[1:4],]
+    other<-c(0,0)
+    other[1]<-1-sum(printMatrix1[1:4,1])
+    other[2]<-round(profit(portfolioTemp)[[1]][2],digits =1)-sum(printMatrix1[,2])
+    printMatrix1<-rbind(printMatrix1,other)
+  }
+  
+  result3<-data.frame(data=printMatrix[,1],symbols=symbols,legend="Time2")
+  
+  
+  p2<-ggplot(data=result3, aes_string(x='symbols',y='data')) + geom_bar(stat="identity",position="dodge",fill="#01526D")+ coord_flip() +
+    # scale_y_continuous(labels = scales::percent)+
+    xlab(NULL) + 
+    ylab(NULL) +
+    xlim(rev(symbols))+
+    ggtitle('Position Weight')+util_plotTheme(axis.text.size=1.5,bw=bw) 
+  
+  
+  
+  result4<-data.frame(data=printMatrix[,2],symbols=symbols,legend="Time2")
+  
+  
+  p3<-ggplot(data=result4, aes_string(x='symbols',y='data')) + geom_bar(stat="identity",position="dodge",fill="#00A3DC")+ coord_flip() +
+    # scale_y_continuous(labels = scales::percent)+
+    xlab(NULL) + 
+    ylab(NULL) +
+    xlim(rev(symbols))+
+    ggtitle('Position Profit ($)')+util_plotTheme(axis.text.size=1.5,bw=bw) + scale_fill_brewer()
+  
+  portfolio_settings(portfolioTemp,set)
+  
+  print(p1, vp = viewport(layout.pos.row = 1,
+                          layout.pos.col = 1:4))
+  print(p2, vp = viewport(layout.pos.row = 2,
+                          layout.pos.col = 1:2))
+  print(p3, vp = viewport(layout.pos.row = 2,
+                          layout.pos.col = 3:4))
+  print(p4, vp = viewport(layout.pos.row = 3,
+                          layout.pos.col = 1:4))
+  print(p5, vp = viewport(layout.pos.row = 4,
+                          layout.pos.col = 1:4))
 }
 
 util_plotTheme<-function (base_size = 10, base_family = "sans", horizontal = TRUE, 

@@ -29,11 +29,11 @@ lagpad=function(x, k=1) {
 
 symbol = "GOOG"
 dateStart = "2014-10-13 09:30:00"
-dateEnd = "2014-10-14 16:00:00"
+dateEnd = "2014-10-30 16:00:00"
 portfolio = portfolio_create(dateStart,dateEnd)
 
-portfolio_addPosition(portfolio,symbol,1)
-price = position_price(portfolio,symbol)
+position=position_add(portfolio,symbol,1)
+price = compute(price(position))[[1]]
 printTime = price[,1]
 
 # Create two strategy by moving average differents length
@@ -68,66 +68,61 @@ p2 = ggplot(lowFrequencyStrategyPlot, aes(x = "", y = positions, fill = Legends)
 p2 = p2+coord_polar("y")+ ggtitle("Intraday holding period for\n low-frequency strategy")+
   util_plotTheme()+util_fillScheme()
 util_multiplot(p1,p2,cols=2)
-
+# util_screenshot('R-holding1.jpg')
 ############################################################
 # Part 3 - Holding Intervals
 ############################################################
 
 highFrequencyPortfolioHoldOnly = portfolio_create(dateStart,dateEnd)
-portfolio_settings(highFrequencyPortfolioHoldOnly,holdingPeriodsOnly=TRUE)
-portfolio_addPosition(highFrequencyPortfolioHoldOnly,symbol,quantity=as.numeric(highFrequencyStrategy),time=printTime)
+portfolio_settings(highFrequencyPortfolioHoldOnly,holdingPeriodsOnly=TRUE,resultsNAFilter=F)
+positionHFHO=position_add(highFrequencyPortfolioHoldOnly,symbol,quantity=as.numeric(highFrequencyStrategy),time=printTime)
 highFrequencyPortfolioHoldOnly
 
 highFrequencyPortfolioAllDay = portfolio_create(dateStart,dateEnd)
-portfolio_settings(highFrequencyPortfolioAllDay,holdingPeriodsOnly=FALSE)
-portfolio_addPosition(highFrequencyPortfolioAllDay,symbol,quantity=as.numeric(highFrequencyStrategy),time=printTime)
+portfolio_settings(highFrequencyPortfolioAllDay,holdingPeriodsOnly=FALSE,resultsNAFilter=F)
+positionHFAD=position_add(highFrequencyPortfolioAllDay,symbol,quantity=as.numeric(highFrequencyStrategy),time=printTime)
 highFrequencyPortfolioAllDay
 
 lowFrequencyPortfolioHoldOnly = portfolio_create(dateStart,dateEnd)
-portfolio_settings(lowFrequencyPortfolioHoldOnly,holdingPeriodsOnly=TRUE)
-portfolio_addPosition(lowFrequencyPortfolioHoldOnly,symbol,quantity=as.numeric(lowFrequencyStrategy),time=printTime)
+portfolio_settings(lowFrequencyPortfolioHoldOnly,holdingPeriodsOnly=TRUE,resultsNAFilter=F)
+positionLFHO=position_add(lowFrequencyPortfolioHoldOnly,symbol,quantity=as.numeric(lowFrequencyStrategy),time=printTime)
 lowFrequencyPortfolioHoldOnly
 
 lowFrequencyPortfolioAllDay = portfolio_create(dateStart,dateEnd)
-portfolio_settings(lowFrequencyPortfolioAllDay,holdingPeriodsOnly=FALSE)
-portfolio_addPosition(lowFrequencyPortfolioAllDay,symbol,quantity=as.numeric(lowFrequencyStrategy),time=printTime)
+portfolio_settings(lowFrequencyPortfolioAllDay,holdingPeriodsOnly=FALSE,resultsNAFilter=F)
+positionLFAD=position_add(lowFrequencyPortfolioAllDay,symbol,quantity=as.numeric(lowFrequencyStrategy),time=printTime)
 lowFrequencyPortfolioAllDay
 
-plot1<-util_ggplot(util_plot2d(position_quantity(highFrequencyPortfolioHoldOnly,symbol),title="High Frequency Portfolio Strategy",line_size=0.6))
-plot2<-util_ggplot(util_plot2d(position_quantity(lowFrequencyPortfolioHoldOnly,symbol),title="Low Frequency Portfolio Strategy",line_size=0.6))
+plot1<-util_ggplot(plot(quantity(positionHFHO),title="High Frequency Portfolio Strategy",line_size=0.6))
+plot2<-util_ggplot(plot(quantity(positionLFHO),title="Low Frequency Portfolio Strategy",line_size=0.6))
 util_multiplot(plot1,plot2,cols=1)
-
+# util_screenshot('R-holding2.jpg')
 ############################################################
 # Part 4 - Trading strategy variance
 ############################################################
-util_plot2d(portfolio_variance(highFrequencyPortfolioHoldOnly),title="Variance, daily",legend="HF HoldOnly")+
-util_line2d(portfolio_variance(highFrequencyPortfolioAllDay),legend="HF AllDay")+
-util_line2d(portfolio_variance(lowFrequencyPortfolioHoldOnly),legend="LF HoldOnly")+
-util_line2d(portfolio_variance(lowFrequencyPortfolioAllDay),legend="LF AllDay")
-
+plot(variance(highFrequencyPortfolioHoldOnly),variance(highFrequencyPortfolioAllDay),
+     variance(lowFrequencyPortfolioHoldOnly),variance(lowFrequencyPortfolioAllDay),
+     title="Variance, daily",legend=c("HF HoldOnly","HF AllDay","LF HoldOnly","LF AllDay"))
+# util_screenshot('R-holding3.jpg')
 ############################################################
 # Part 5 - Trading strategy Value-at-Risk
 ############################################################
-
-util_plot2d(portfolio_VaR(highFrequencyPortfolioHoldOnly,0.95),title="VaR, daily",legend="HF HoldOnly")+
-util_line2d(portfolio_VaR(highFrequencyPortfolioAllDay,0.95),legend="HF AllDay")+
-util_line2d(portfolio_VaR(lowFrequencyPortfolioHoldOnly,0.95),legend="LF HoldOnly")+
-util_line2d(portfolio_VaR(lowFrequencyPortfolioAllDay,0.95),legend="LF AllDay")
-
+plot(value_at_risk(highFrequencyPortfolioHoldOnly,0.95),value_at_risk(highFrequencyPortfolioAllDay,0.95),
+     value_at_risk(lowFrequencyPortfolioHoldOnly,0.95),value_at_risk(lowFrequencyPortfolioAllDay,0.95),
+     title="VaR, daily",legend=c("HF HoldOnly","HF AllDay","LF HoldOnly","LF AllDay"))
+# util_screenshot('R-holding4.jpg')
 ############################################################
 # Part 6 - Trading strategy expected return
 ############################################################
-
-util_plot2d(portfolio_expectedReturn(highFrequencyPortfolioHoldOnly),title="Expected Return, daily",legend="HF HoldOnly")+
-util_line2d(portfolio_expectedReturn(highFrequencyPortfolioAllDay),legend="HF AllDay")+
-util_line2d(portfolio_expectedReturn(lowFrequencyPortfolioHoldOnly),legend="LF HoldOnly")+
-util_line2d(portfolio_expectedReturn(lowFrequencyPortfolioAllDay),legend="LF AllDay")
-
+plot(expected_return(highFrequencyPortfolioHoldOnly),expected_return(highFrequencyPortfolioAllDay),
+     expected_return(lowFrequencyPortfolioHoldOnly),expected_return(lowFrequencyPortfolioAllDay),
+     title="Expected Return, daily",legend=c("HF HoldOnly","HF AllDay","LF HoldOnly","LF AllDay"))
+# util_screenshot('R-holding5.jpg')
 ############################################################
 # Part 7 - Trading strategy Sharpe ratio
 ############################################################
+plot(sharpe_ratio(highFrequencyPortfolioHoldOnly),sharpe_ratio(highFrequencyPortfolioAllDay),
+     sharpe_ratio(lowFrequencyPortfolioHoldOnly),sharpe_ratio(lowFrequencyPortfolioAllDay),
+     title="Sharpe Ratio, daily",legend=c("HF HoldOnly","HF AllDay","LF HoldOnly","LF AllDay"))
 
-util_plot2d(portfolio_sharpeRatio(highFrequencyPortfolioHoldOnly),title="Sharpe Ratio, daily",legend="HF HoldOnly")+
-util_line2d(portfolio_sharpeRatio(highFrequencyPortfolioAllDay),legend="HF AllDay")+
-util_line2d(portfolio_sharpeRatio(lowFrequencyPortfolioHoldOnly),legend="LF HoldOnly")+
-util_line2d(portfolio_sharpeRatio(lowFrequencyPortfolioAllDay),legend="LF AllDay")
+# util_screenshot('R-holding6.jpg')

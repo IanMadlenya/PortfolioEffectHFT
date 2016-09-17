@@ -183,7 +183,7 @@ You are now ready to call PortfolioEffectHFT methods.
 \section{User Data}
 Users may supply their own historical datasets for index and position entries. 
 This external data could be one a OHLC bar column element (e.g. 1-second close prices) or a vector of actual transaction prices that contains non-equidistant data points. 
-You might want to pre-pend at least N =(4 x windowLength) data points to the
+You might want to prepend at least N =(4 x windowLength) data points to the
 beginning of the interval of interest which would be used for initial calibration of portfolio metrics.
 \subsection{Create Portfolio}
 Method
@@ -220,13 +220,13 @@ data(goog.data)
 data(aapl.data)
 
 # Single position without rebalancing
-portfolio_addPosition(portfolio, 
+positionGOOG=position_add(portfolio, 
 			symbol='GOOG', 
 			quantity=100, 
 			priceData=goog.data) 
 
 # Single position with rebalancing
-portfolio_addPosition(portfolio, 
+positionAAPL=position_add(portfolio, 
 			symbol='AAPL', 
 			quantity=c(300,150), 
 			time=c("2014-09-01 09:00:00","2014-09-07 14:30:00"), 
@@ -295,22 +295,18 @@ portfolio_availableSymbols(portfolio)
 
 \subsection {Add Positions}
 Positions are added by calling
-\href{https://www.portfolioeffect.com/docs/platform/quant/functions/general-functions/portfolio-add-position}{portfolio\_addPosition()}
+\href{https://www.portfolioeffect.com/docs/platform/quant/functions/general-functions/portfolio-add-position}{position\_add()}
 method on a portfolio object with a list of symbols and quantities. For
 positions that were rebalanced or had non-default holding periods a 'time' argument could be used to specify rebalancing timestamps.
 \begin{lstlisting}
 # Single position without rebalancing
-portfolio_addPosition(portfolio,
+positionGOOG=position_add(portfolio,
 			symbol='GOOG', 
 			quantity=100)
 
-# Multiple positions without rebalancing
-portfolio_addPosition(portfolio,
-			symbol=c('C','GOOG'),
-			quantity=c(500,600))
 
 # Single position with rebalancing
-portfolio_addPosition(portfolio,
+positionAAPL=position_add(portfolio,
 			symbol='AAPL', 
 			quantity=c(300,150), 
 			time=c("2014-09-01 09:00:00","2014-09-07 14:30:00"))
@@ -339,23 +335,22 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 						   
-portfolio_addPosition(portfolio, 
+positionAAPL=position_add(portfolio, 
 			symbol='AAPL', quantity=c(300,150), 
 			time=c("2014-10-01 09:30:00","2014-10-02 09:30:00"))
 			
-portfolio_addPosition(portfolio, 
+positionGOOG=position_add(portfolio, 
 			symbol='GOOG', quantity=c(100,150), 
 			time=c("2014-10-01 09:30:00","2014-10-02 09:30:00"))
 
 # "price" mode
 portfolio_settings(portfolio, portfolioMetricsMode="price")
-variance_price=portfolio_variance(portfolio);
+variance_price=variance(portfolio);
 
 # "portfolio" mode
 portfolio_settings(portfolio, portfolioMetricsMode="portfolio")
-variance_portfolio=portfolio_variance(portfolio);
-util_plot2d(variance_portfolio,title="Variance, portfolioMetricsMode",legend="price")+
-    util_line2d(variance_price,legend="portfolio")
+variance_portfolio=variance(portfolio);
+plot(variance_portfolio,variance_price,title="Variance, portfolioMetricsMode",legend=c("portfolio","price"))
 \end{lstlisting}
 
 \subsection {Holding Periods Only}
@@ -369,7 +364,7 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,'AAPL',
+positionAAPL=position_add(portfolio,'AAPL',
 					 c(0,300,0,150),
 					 time=c("2014-09-30 09:30:00",
 					 "2014-10-01 09:30:00",
@@ -378,14 +373,14 @@ portfolio_addPosition(portfolio,'AAPL',
 
 # enable holdingPeriodsOnly
 portfolio_settings(portfolio, holdingPeriodsOnly=TRUE)
-variance_holdingPeriodsOnly_TRUE=portfolio_variance(portfolio);
+variance_holdingPeriodsOnly_TRUE=variance(portfolio);
 
 
 # disable holdingPeriodsOnly
 portfolio_settings(portfolio, holdingPeriodsOnly=FALSE)
-variance_holdingPeriodsOnly_FALSE=portfolio_variance(portfolio);
+variance_holdingPeriodsOnly_FALSE=variance(portfolio);
 
-util_plot2d(variance_holdingPeriodsOnly_TRUE,title="Variance,holdingPeriodsOnly",legend="TRUE")+ util_line2d(variance_holdingPeriodsOnly_FALSE,legend="FALSE")
+plot(variance_holdingPeriodsOnly_TRUE,variance_holdingPeriodsOnly_FALSE,title="Variance,holdingPeriodsOnly",legend=c("TRUE","FALSE"))
 \end{lstlisting}
 
 \subsection {Short Sales Mode}
@@ -403,24 +398,23 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,
-					  c('C','GOOG'),
-					  c(-500,600))
+positionC=position_add(portfolio,'C',-500,)
+positionGOOG=position_add(portfolio,'GOOG',600)					  
 
 # weights are normalized based on a simple sum (Markowitz)
 portfolio_settings(portfolio, shortSalesMode="markowitz")
-variance_markowitz=portfolio_variance(portfolio);
+variance_markowitz=variance(portfolio);
 
 # weights are normalized based on a sum of absolute values (Lintner)
 portfolio_settings(portfolio, shortSalesMode="lintner")
-variance_lintner=portfolio_variance(portfolio);
+variance_lintner=variance(portfolio);
 
-util_plot2d(variance_markowitz,title="Variance,shortSalesMode",legend="markowitz")+ util_line2d(variance_lintner,legend="lintner")
+plot(variance_markowitz,variance_lintner,title="Variance,shortSalesMode",legend=c("markowitz","lintner"))
 \end{lstlisting}
 
 \section{Data Sampling}
 These settings regulate how results of portfolio computations are returned. 
-Depending on your usage scenario, some of them might bring significantly imporvement to speed of your portfolio computations
+Depending on your usage scenario, some of them might bring significantly improvement to speed of your portfolio computations
 \subsection{Results Sampling Interval}
 Interval to be used for sampling computed results before returning them to the caller. 
 Available interval values are: 
@@ -442,18 +436,19 @@ trading hours.
 require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-01 16:00:00")
-						   
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)		
 
 # sample results every 30 seconds
 portfolio_settings(portfolio, resultsSamplingInterval="30s")
-variance_30s=portfolio_variance(portfolio);
+variance_30s=variance(portfolio);
 
 # sample results every 5 minutes
 portfolio_settings(portfolio, resultsSamplingInterval="15m")
-variance_15m=portfolio_variance(portfolio);
+variance_15m=variance(portfolio);
 
-util_plot2d(variance_30s,title="Variance,resultsSamplingInterval",legend="30s")+ util_line2d(variance_15m,legend="15m")
+plot(variance_30s,variance_15m,title="Variance,resultsSamplingInterval",legend=c("30s","15m"))
 \end{lstlisting}
 \subsection{Input Sampling Interval}
 Interval to be used as a minimum step for sampling input prices. Available interval values are: 
@@ -473,17 +468,18 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 							   
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # sample input prices every 30 seconds
 portfolio_settings(portfolio, inputSamplingInterval="30s")
-variance_30s=portfolio_variance(portfolio);
+variance_30s=variance(portfolio);
 
 # sample input prices every 5 min
 portfolio_settings(portfolio, inputSamplingInterval="5m")
-variance_5m=portfolio_variance(portfolio);
+variance_5m=variance(portfolio);
 
-util_plot2d(variance_30s,title="Variance,inputSamplingInterval",legend="30s")+ util_line2d(variance_5m,legend="5m")
+plot(variance_30s,variance_5m,title="Variance,inputSamplingInterval",legend=c("30s","5m"))
 \end{lstlisting}
 
 
@@ -508,17 +504,18 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 						   
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # 1 hour rolling window
 portfolio_settings(portfolio, windowLength="1h")
-variance_1h=portfolio_variance(portfolio);
+variance_1h=variance(portfolio);
 
 # 1 week rolling window
 portfolio_settings(portfolio, windowLength="1d")
-variance_1d=portfolio_variance(portfolio);
+variance_1d=variance(portfolio);
 
-util_plot2d(variance_1h,title="Variance,windowLength",legend="1h")+ util_line2d(variance_1d,legend="1d")
+plot(variance_1h,variance_1d,title="Variance,windowLength",legend=c("1h","1d"))
 \end{lstlisting}
 
 \subsection{Time Scale}
@@ -539,40 +536,42 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 						   
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # 1 hour time scale 
 portfolio_settings(portfolio, timeScale="1h")
-variance_1h=portfolio_variance(portfolio);
+variance_1h=variance(portfolio);
 
 # 1 week time scale
 portfolio_settings(portfolio, timeScale="1d")
-variance_1d=portfolio_variance(portfolio);
+variance_1d=variance(portfolio);
 
-util_plot2d(variance_1h,title="Variance,timeScale",legend="1h")+ util_line2d(variance_1d,legend="1d")
+plot(variance_1h,variance_1d,title="Variance,timeScale",legend=c("1h","1d"))
 \end{lstlisting}
 
 \subsection{Microstructure Noise Model}
-Enables market mirostructure noise model of distribution returns.\\
-Defaults to TRUE, which means that microstructure effects are modeled and resulting HF noise is removed from metric caluclations. 
-When FALSE, HF microstructure noise is not separated from asset returns, which at high trading frequences could yield noise-contaminated results.
+Enables market microstructure noise model of distribution returns.\\
+Defaults to TRUE, which means that microstructure effects are modeled and resulting HF noise is removed from metric calculations. 
+When FALSE, HF microstructure noise is not separated from asset returns, which at high trading frequencies could yield noise-contaminated results.
 
 \begin{lstlisting}
 require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # HF noise model is enabled
 portfolio_settings(portfolio, noiseModel=TRUE)
-variance_noiseModel_TRUE=portfolio_variance(portfolio);
+variance_noiseModel_TRUE=variance(portfolio);
 
 # HF noise model is disabled
 portfolio_settings(portfolio, noiseModel=FALSE)
-variance_noiseModel_FALSE=portfolio_variance(portfolio);
+variance_noiseModel_FALSE=variance(portfolio);
 
-util_plot2d(variance_noiseModel_TRUE,title="Variance,noiseModel",legend="TRUE")+ util_line2d(variance_noiseModel_FALSE,legend="FALSE")
+plot(variance_noiseModel_TRUE,variance_noiseModel_FALSE,title="Variance,noiseModel",legend=c("TRUE","FALSE"))
 \end{lstlisting}
 
 \subsection{Jumps/Outliers Model}
@@ -590,17 +589,18 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						  toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # Price jumps detection is enabled for returns and moments
 portfolio_settings(portfolio, jumpsModel="all")
-variance_all=portfolio_variance(portfolio);
+variance_all=variance(portfolio);
 
 # Price jumps detection is disabled
 portfolio_settings(portfolio, jumpsModel="none")
-variance_none=portfolio_variance(portfolio);
+variance_none=variance(portfolio);
 
-util_plot2d(variance_all,title="Variance,jumpsModel",legend="all")+ util_line2d(variance_none,legend="none")
+plot(variance_all,variance_none,title="Variance,jumpsModel",legend=c("all","none"))
 \end{lstlisting}
 
 \subsection {Density Model}
@@ -617,15 +617,16 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						  toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # Using normal density
 portfolio_settings(portfolio, densityModel="NORMAL")
-util_plotDensity(portfolio_pdf(portfolio,pValueLeft=0.6,pValueRight=1,nPoints=100,addNormalDensity=TRUE))
+util_plotDensity(dist_density(portfolio,pValueLeft=0.6,pValueRight=1,nPoints=100,addNormalDensity=TRUE))
 
 # Using Generalized Lambda density
 portfolio_settings(portfolio, densityModel="GLD")
-util_plotDensity(portfolio_pdf(portfolio,pValueLeft=0.6,pValueRight=1,nPoints=100,addNormalDensity=TRUE))
+util_plotDensity(dist_density(portfolio,pValueLeft=0.6,pValueRight=1,nPoints=100,addNormalDensity=TRUE))
 \end{lstlisting}
 
 \subsection {Factor Model}
@@ -642,17 +643,18 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # Single Index Model is used
 portfolio_settings(portfolio, factorModel="sim")
-variance_sim=portfolio_variance(portfolio);
+variance_sim=variance(portfolio);
 
 # Direct model is used
 portfolio_settings(portfolio, factorModel="direct")
-variance_direct=portfolio_variance(portfolio);
+variance_direct=variance(portfolio);
 
-util_plot2d(variance_sim,title="Variance,factorModel",legend="sim")+ util_line2d(variance_direct,legend="direct")
+plot(variance_sim,variance_direct,title="Variance,factorModel",legend=c("sim","direct"))
 \end{lstlisting}
 
 
@@ -666,17 +668,18 @@ require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # Fractal price model is enabled
 portfolio_settings(portfolio, fractalPriceModel=TRUE)
-variance_fractal=portfolio_variance(portfolio);
+variance_fractal=variance(portfolio);
 
 # Fractal price model is disabled
 portfolio_settings(portfolio, fractalPriceModel=FALSE)
-variance_nonfractal=portfolio_variance(portfolio);
+variance_nonfractal=variance(portfolio);
 
-util_plot2d(variance_fractal,title="Variance,fractalPriceModel",legend="enabled")+ util_line2d(variance_nonfractal,legend="disabled")
+plot(variance_fractal,variance_nonfractal,title="Variance,fractalPriceModel",legend=c("enabled","disabled"))
 \end{lstlisting}
 
 
@@ -687,40 +690,51 @@ Defaults to FALSE, which implies that distribution is centered around expected r
 \begin{lstlisting}
 require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # Drift term is enabled
 portfolio_settings(portfolio, driftTerm=TRUE)
-CVaR_driftTerm_TRUE=portfolio_CVaR(portfolio);
+ES_driftTerm_TRUE=expected_shortfall(portfolio,0.95);
 
 # Drift term is disabled
 portfolio_settings(portfolio, driftTerm=FALSE)
-CVaR_driftTerm_FALSE=portfolio_CVaR(portfolio);
+ES_driftTerm_FALSE=expected_shortfall(portfolio,0.95);
 
-util_plot2d(CVaR_driftTerm_TRUE,title="CVaR,driftTerm",legend="TRUE")+ util_line2d(CVaR_driftTerm_FALSE,legend="FALSE")
+plot(ES_driftTerm_TRUE,ES_driftTerm_FALSE,title="Expected Shortfall,driftTerm",legend=c("TRUE","FALSE"))
 \end{lstlisting}
 
 \section{Transactional Costs}
 These settings provide a framework for adding variable and fixed transactional costs into return, expected return and profit calculations.
-All metrics based on expected return like Sharpe Ratio, VaR (with drift term enabled) would reflect transactional costsin their computations.
+All metrics based on expected return like Sharpe Ratio, VaR (with drift term enabled) would reflect transactional costs in their computations.
 \subsection{Cost Per Share}
 Amount of transaction costs per share. Default value is 0.
 \begin{lstlisting}
 require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio,c('C','GOOG'),c(500,600))
+						   
+positionAAPL=position_add(portfolio,'AAPL',
+					 c(100,300,500,150),
+					 time=c("2014-10-01 09:30:00",
+					 "2014-10-01 11:30:00",
+					 "2014-10-01 15:30:00", 
+					 "2014-10-02 11:30:00"))
 
 # Transactional costs per share are 0.5 cent 
 portfolio_settings(portfolio, txnCostPerShare=0.005)
-return_5=portfolio_return(portfolio)
+return_5=log_return(portfolio)
+txn_costs_5=txn_costs(portfolio)
 
 # Transactional costs per share are 0.1 cent 
 portfolio_settings(portfolio, txnCostPerShare=0.001)
-return_1=portfolio_return(portfolio)
+return_1=log_return(portfolio)
+txn_costs_1=txn_costs(portfolio)
 
-util_plot2d(return_5,title="Return,txnCostPerShare",legend="0.005")+
-util_line2d(return_1,legend="0.001")
+plot(return_5,return_1,title="Return,txnCostPerShare",legend=c("0.005","0.001"))
+
+plot(txn_costs_5,txn_costs_1,title="Txn Costs,txnCostPerShare",legend=c("0.005","0.001"))
 \end{lstlisting}
 \subsection {Cost Per Transaction}
 Amount of fixed costs per transaction. Defaults to 0.
@@ -728,7 +742,7 @@ Amount of fixed costs per transaction. Defaults to 0.
 require(PortfolioEffectHFT)
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio,'AAPL',
+positionAAPL=position_add(portfolio,'AAPL',
 					 c(100,300,500,150),
 					 time=c("2014-10-01 09:30:00",
 					 "2014-10-01 11:30:00",
@@ -737,14 +751,17 @@ portfolio_addPosition(portfolio,'AAPL',
 
 # Fixed costs per transaction are 9 dollars
 portfolio_settings(portfolio, txnCostFixed=19.0)
-return_19=portfolio_return(portfolio)
+return_19=log_return(portfolio)
+txn_costs_19=txn_costs(portfolio)
 
 # Fixed costs per transaction are 1 dollar
 portfolio_settings(portfolio, txnCostFixed=1.0)
-return_1=portfolio_return(portfolio)
+return_1=log_return(portfolio)
+txn_costs_1=txn_costs(portfolio)
 
-util_plot2d(return_19,title="Return,txnCostFixed",legend="19.0")+
-util_line2d(return_1,legend="1.0")
+plot(return_19,return_1,title="Return,txnCostFixed",legend=c("19.0","1.0"))
+
+plot(txn_costs_19,txn_costs_1,title="Txn Costs,txnCostFixed",legend=c("19.0","1.0"))
 \end{lstlisting}
 
 \chapter{Portfolio Optimization}
@@ -781,51 +798,48 @@ method to launch portfolio optimization.
 
 \begin{lstlisting}
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio, symbol=c('C','GOOG'),	quantity=c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 portfolio_settings(portfolio, 
 				   portfolioMetricsMode='price', 
 				   resultsSamplingInterval='30m')
 				   
 # set optimization goal
-optimizer=optimization_goal(portfolio,
-                            goal="Return", direction="maximize")
+optimizer=optimization_goal(log_return(portfolio),"max")
 
 # launch optimization and obtain optimal portfolio
 optimalPortfolio=optimization_run(optimizer)
 
-util_plot2d(portfolio_return(portfolio),title="Portfolio Return",legend="Simple Portfolio")+ util_line2d(portfolio_return(optimalPortfolio),legend="Optimal Portfolio")
+plot(log_return(portfolio),log_return(optimalPortfolio),title="Portfolio Return",legend=c("Simple Portfolio","Optimal Portfolio"))
 \end{lstlisting}
 
 The following portfolio metrics could currently be used as optimization goals:
 
 \begin{description} 
-\item[``Variance''] \hfill \\ 
+\item[``variance(portfolio)''] \hfill \\ 
 portfolio returns variance 
-\item[``VaR''] \hfill \\ 
+\item[``value\_at\_risk(portfolio)''] \hfill \\ 
 portfolio Value-at-Risk
-\item[``CVaR''] \hfill \\ 
+\item[``expected\_shortfall(portfolio)''] \hfill \\ 
 portfolio Conditional Value-at-Risk (Expected Tail Loss)
-\item[``ExpectedReturn''] \hfill \\ 
+\item[``expected\_return(portfolio)''] \hfill \\ 
 portfolio expected return
-\item[``Return''] \hfill \\
+\item[``log\_return(portfolio)''] \hfill \\
 portfolio return
-\item[``SharpeRatio''] \hfill \\
+\item[``sharpe\_ratio(portfolio)''] \hfill \\
 portfolio Sharpe Ratio
-\item[``ModifiedSharpeRatio''] \hfill \\
+\item[``mod\_sharpe\_ratio(portfolio)''] \hfill \\
 portfolio modified Sharpe Ratio
-\item[``StarrRatio''] \hfill \\
+\item[``starr\_ratio(portfolio)''] \hfill \\
 portfolio STARR Ratio
-\item[``ContraintsOnly''] \hfill \\
-no optimization is performed. This is used for returning an arbitrary portfolio
-that meets specified set of constraints
-\item[``EquiWeight''] \hfill \\  
+\item[``weight\_transform(portfolio,"equiweight")''] \hfill \\  
 no optimization is performed and constraints are not processes.
 Portfolio positions are returned with equal weights
 \end{description}
 
 \subsection{Adding Constraints}
 Optimization constraints cover both metric-based and weight-based
-constraints.Metric-based constraints limit portfolio-level metrics to a certain
+constraints. Metric-based constraints limit portfolio-level metrics to a certain
 range of values. For example, zero beta constraint would produce market-neutral optimal portfolio.
 Weight-based constraints operate on optimal position weights or sum of weights to 
 give control over position concentration risks or short-sales assumptions.
@@ -842,72 +856,34 @@ Lower portfolio value or higher asset price would normally increase discretizati
 \begin{lstlisting}
 # create portfolio and add positions
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio, symbol=c('C','GOOG'),	quantity=c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)
+positionAAPL=position_add(portfolio,'AAPL',300)	
+
 portfolio_settings(portfolio, 
 				   portfolioMetricsMode='price', 
 				   resultsSamplingInterval='30m')
 				   
 # set optimization goal
-optimizer=optimization_goal(portfolio, goal="SharpeRatio", direction="maximize")
+optimizer=optimization_goal(sharpe_ratio(portfolio),"max")
 
 # add constraints
-optimization_constraint_beta(optimizer,"=",0)
-optimization_constraint_weight(optimizer,">=",0.5, "GOOG")
-optimization_constraint_variance(optimizer,"<=",0.02)
+optimizer=optimization_constraint(optimizer,beta(portfolio),"=",0)
+optimizer=optimization_constraint(optimizer,weight(positionGOOG),">=",0.5)
+optimizer=optimization_constraint(optimizer,variance(portfolio),"<=",0.02)
+optimizer=optimization_constraint(optimizer,value(portfolio),"=",10^6)
  
 # launch optimization and obtain optimal portfolio
 optimalPortfolio=optimization_run(optimizer)
 
-util_plot2d(portfolio_sharpeRatio(portfolio),title="Sharpe Ratio",legend="Simple
-Portfolio")+ util_line2d(portfolio_sharpeRatio(optimalPortfolio),legend="Optimal Portfolio")
+plot(sharpe_ratio(portfolio),sharpe_ratio(optimalPortfolio),title="Sharpe Ratio",legend=c("Simple Portfolio","Optimal Portfolio"))
 
-util_plot2d(portfolio_beta(portfolio),title="Beta",legend="Simple Portfolio")+
-util_line2d(portfolio_beta(optimalPortfolio),legend="Optimal Portfolio")
+plot(beta(portfolio),beta(optimalPortfolio),title="Beta",legend=c("Simple Portfolio","Optimal Portfolio"))
 
-util_plot2d(portfolio_variance(portfolio),title="Variance",legend="Simple Portfolio")+ 
-util_line2d(portfolio_variance(optimalPortfolio),legend="Optimal Portfolio")
+plot(variance(portfolio),variance(optimalPortfolio),title="Variance",legend=c("Simple Portfolio","Optimal Portfolio"))
+
+plot(weight(portfolio_getPosition(portfolio,'GOOG')),weight(portfolio_getPosition(optimalPortfolio,'GOOG')),title="Weight GOOG",legend=c("Simple Portfolio","Optimal Portfolio"))
 \end{lstlisting}
-
-The following constraint methods are available:
-			
-\begin{description} 
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-all-weights}{optimization\_constraint\_allWeights}]
-\hfill \\
-portfolio weights of all positions
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-weight}{optimization\_constraint\_weight}]
-\hfill \\
-portfolio position weights
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-sum-of-abs-weights}{optimization\_constraint\_sumOfAbsWeights}]
-\hfill \\
-portfolio's sum of absolute positions weights for selected positions
-\item[\href{https://www.portfolioeffect.com/docs/docs/platform/quant/functions/optimization-functions/optimization-constraint-return}{optimization\_constraint\_return}]
-\hfill \\
-portfolio return
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-expected-return}{optimization\_constraint\_expectedReturn}]
-\hfill \\
-portfolio expected return
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-variance}{optimization\_constraint\_variance}]
-\hfill \\
-portfolio returns variance
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-beta}{optimization\_constraint\_beta}]
-\hfill \\
-portfolio beta
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-var}{optimization\_constraint\_VaR}]
-\hfill \\
-portfolio Value-at-Risk
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-cvar}{optimization\_constraint\_CVaR}]
-\hfill \\
-portfolio Conditional Value-at-Risk (Expected Tail Loss)
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-modified-sharpe-ratio}{optimization\_constraint\_modifiedSharpeRatio}]
-\hfill \\
-portfolio modified Sharpe Ratio
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-sharpe-ratio}{optimization\_constraint\_sharpeRatio}]
-\hfill \\
-portfolio Sharpe Ratio
-\item[\href{https://www.portfolioeffect.com/docs/platform/quant/functions/optimization-functions/optimization-constraint-starr-ratio}{optimization\_constraint\_starrRatio}]
-\hfill \\
-portfolio STARR Ratio
-\end{description}
 
 \subsection{Scalar Constraints}
 Scalar constraints are the simplest type of optimization boundaries. 
@@ -919,9 +895,8 @@ An example below sets portfolio beta constraint to be greater or equal to 0.1.
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
 
-portfolio_addPosition(portfolio, 
-					symbol=c('C','GOOG'),	
-					quantity=c(500,600))
+positionC=position_add(portfolio,'C',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # rebalancing every minute, static portfolio ignores rebalancing history
 portfolio_settings(portfolio, 
@@ -929,17 +904,14 @@ portfolio_settings(portfolio,
 				   resultsSamplingInterval='30m')
 
 # set optimization goal and define constraints
-optimizer=optimization_goal(portfolio, 
-							goal="SharpeRatio", 
-							direction="maximize")
-optimization_constraint_beta(optimizer, "<=", constraintValue = 0.1)
+optimizer=optimization_goal(sharpe_ratio(portfolio),"max")
+optimizer=optimization_constraint(optimizer,beta(portfolio), "<=", constraintValue = 0.1)
 
 # run optimization
 optimalPortfolio=optimization_run(optimizer)
 
 # plot results
-util_plot2d(portfolio_beta(optimalPortfolio), title="Beta", legend="Optimal Beta") + 
-util_line2d(portfolio_beta(portfolio), legend="Original Beta")
+plot(beta(optimalPortfolio),beta(portfolio), title="Beta", legend=c("Optimal Beta","Original Beta"))
 \end{lstlisting}
 
 \subsection{Vector Constraints}
@@ -950,9 +922,8 @@ Optimization algorithm would then automatically determine when certain constrain
 # create portfolio and add positions
 portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
 						   toTime="2014-10-02 16:00:00")
-portfolio_addPosition(portfolio, 
-					  symbol=c("AAPL","GOOG"), 
-					  quantity=c(500,600))
+positionAAPL=position_add(portfolio,'AAPL',500)
+positionGOOG=position_add(portfolio,'GOOG',600)	
 
 # rebalancing every minute, static portfolio ignores rebalancing history
 portfolio_settings(portfolio, 
@@ -962,64 +933,14 @@ portfolio_settings(portfolio,
 betaVector = cbind(c("2014-10-01 09:30:00","2014-10-01 12:30:00"), c(0.1,0.5))
 
 # set optimization goal and define constraints
-optimizer=optimization_goal(portfolio, 
-							goal="SharpeRatio", 
-							direction="maximize")
-optimizer=optimization_constraint_beta(optimizer, "<=", 
-									   constraintValue = betaVector)
+optimizer=optimization_goal(sharpe_ratio(portfolio),"max")
+optimizer=optimization_constraint(optimizer,beta(portfolio), "<=", constraintValue = betaVector)
 
 # run optimization
 optimalPortfolio=optimization_run(optimizer)
 
 # plot results
-util_plot2d(portfolio_beta(optimalPortfolio), title="Beta", legend="Optimal Beta") + 
-util_line2d(portfolio_beta(portfolio), legend="Original Beta")
-\end{lstlisting}
-
-
-\subsection {User-Defined Constraints}
-User-defined constraint relies on a provided function, which is called during portfolio optimization at specified rebalancing times.
-Function should return a scalar constraint value and would optionally receive portfolio and current time, if they are specified as arguments.   
-\begin{itemize} 
-  \item function () - automatically converted to a scalar constraint
-  \item function (time) - automatically converted to a vector constraint
-  \item function (portfolio, time) - evaluated during optimization procedure
-\end{itemize}
-
-\textbf{Note:} When functional constraint specifies portfolio object as a required arguement, 
-it could no longer be quickly converted to a scalar or vector-based constraint.
-In such case, optimization procedure would take a performance hit.
-
-\begin{lstlisting}
-# create portfolio and add positions
-my_portfolio=portfolio_create(fromTime="2014-10-01 09:30:00", 
-							  toTime="2014-10-02 16:00:00")
-portfolio_addPosition(my_portfolio, 
-					  symbol=c('AAPL','GOOG'),  
-					  quantity=c(500,600))
-
-# rebalancing every 30m, static portfolio ignores rebalancing history
-portfolio_settings(my_portfolio, 
-				   portfolioMetricsMode='price', 
-				   resultsSamplingInterval='30m')
-
-# define custom optimization constraint method for beta
-
-myConstraint<-function(portfolio){
-  # custom function
-  portfolio_beta(portfolio)[,2]-0.2
-}
-# set optimization goal and define constraints
-optimizer=optimization_goal(my_portfolio, goal="SharpeRatio", direction="maximize")
-optimizer=optimization_constraint_beta(optimizer, ">=", 
-									  constraintValue = myConstraint)
-
-# run optimization
-optimalPortfolio=optimization_run(optimizer)
-
-# plot results
-util_plot2d(portfolio_beta(optimalPortfolio), title="Beta", legend="Optimal Beta") + 
-util_line2d(portfolio_beta(my_portfolio), legend="Original Beta")
+plot(beta(optimalPortfolio),beta(portfolio), title="Beta", legend=c("Optimal Beta","Original Beta"))
 \end{lstlisting}
 
  

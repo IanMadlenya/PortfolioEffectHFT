@@ -1,3 +1,134 @@
+PortfolioEffectHFT v1.7 (Release date: 2016-07-15)
+==============
+
+Changes:
+
+* Calculation logic was changed to always return metric classes to allow lazy evaluation and auto-batching calculations.  
+* The following metric functions was renamed:
+  portfolio_addPosition  ->  position_add
+  portfolio_alpha  ->  alpha_exante
+  portfolio_beta  ->  beta
+  portfolio_calmarRatio  ->  calmar_ratio
+  portfolio_create  ->  portfolio_create
+  portfolio_cumulant  ->  cumulant
+  portfolio_CVaR  ->  expected_shortfall
+  portfolio_downCaptureRatio  ->  down_capture_ratio
+  portfolio_downNumberRatio  ->  down_number_ratio
+  portfolio_downPercentageRatio  ->  down_percentage_ratio
+  portfolio_downsideVariance  ->  downside_variance
+  portfolio_expectedDownsideReturn  ->  expected_downside_return
+  portfolio_expectedReturn  ->  expected_return
+  portfolio_expectedUpsideReturn  ->  expected_upside_return
+  portfolio_fractalDimension  ->  fractal_dimension
+  portfolio_gainLossVarianceRatio  ->  gain_loss_variance_ratio
+  portfolio_gainVariance  ->  gain_variance
+  portfolio_hurstExponent  ->  hurst_exponent
+  portfolio_informationRatio  ->  information_ratio
+  portfolio_jensensAlpha  ->  alpha_jensens
+  portfolio_kurtosis  ->  kurtosis
+  portfolio_lossVariance  ->  loss_variance
+  portfolio_maxDrawdown  ->  max_drawdown
+  portfolio_modifiedSharpeRatio  ->  mod_sharpe_ratio
+  portfolio_moment  ->  moment
+  portfolio_omegaRatio  ->  omega_ratio
+  portfolio_pdf  ->  dist_density
+  portfolio_profit  ->  profit
+  portfolio_rachevRatio  ->  rachev_ratio
+  portfolio_removePosition  ->  position_remove
+  portfolio_return  ->  log_return
+  portfolio_sharpeRatio  ->  sharpe_ratio
+  portfolio_skewness  ->  skewness
+  portfolio_sortinoRatio  ->  sortino_ratio
+  portfolio_starrRatio  ->  starr_ratio
+  portfolio_startBatch  ->  portfolio_startBatch
+  portfolio_symbols  ->  position_list
+  portfolio_treynorRatio  ->  treynor_ratio
+  portfolio_txnCosts  ->  txn_costs
+  portfolio_upCaptureRatio  ->  up_capture_ratio
+  portfolio_upNumberRatio  ->  up_number_ratio
+  portfolio_upPercentageRatio  ->  up_percentage_ratio
+  portfolio_upsideDownsideVarianceRatio  ->  upside_downside_variance_ratio
+  portfolio_upsideVariance  ->  upside_variance
+  portfolio_value  ->  value
+  portfolio_VaR  ->  value_at_risk
+  portfolio_variance  ->  variance
+  position_alpha  ->  alpha_exante
+  position_beta  ->  beta
+  position_calmarRatio  ->  calmar_ratio
+  position_correlation  ->  correlation
+  position_correlationMatrix  ->  correlation
+  position_covariance  ->  covariance
+  position_covarianceMatrix  ->  covariance
+  position_cumulant  ->  cumulant
+  position_CVaR  ->  expected_shortfall
+  position_downCaptureRatio  ->  down_capture_ratio
+  position_downNumberRatio  ->  down_number_ratio
+  position_downPercentageRatio  ->  down_percentage_ratio
+  position_downsideVariance  ->  downside_variance
+  position_expectedDownsideReturn  ->  expected_downside_return
+  position_expectedReturn  ->  expected_return
+  position_expectedUpsideReturn  ->  expected_upside_return
+  position_fractalDimension  ->  fractal_dimension
+  position_gainLossVarianceRatio  ->  gain_loss_variance_ratio
+  position_gainVariance  ->  gain_variance
+  position_hurstExponent  ->  hurst_exponent
+  position_informationRatio  ->  information_ratio
+  position_jensensAlpha  ->  alpha_jensens
+  position_kurtosis  ->  kurtosis
+  position_lossVariance  ->  loss_variance
+  position_maxDrawdown  ->  max_drawdown
+  position_modifiedSharpeRatio  ->  mod_sharpe_ratio
+  position_moment  ->  moment
+  position_omegaRatio  ->  omega_ratio
+  position_pdf  ->  dist_density
+  position_price  ->  price
+  position_profit  ->  profit
+  position_quantity  ->  quantity
+  position_rachevRatio  ->  rachev_ratio
+  position_return  ->  log_return
+  position_returnAutocovariance  ->  return_autocovariance
+  position_returnJumpSize  ->  return_jump_size
+  position_setQuantity  ->  set_quantity
+  position_sharpeRatio  ->  sharpe_ratio
+  position_skewness  ->  skewness
+  position_sortinoRatio  ->  sortino_ratio
+  position_starrRatio  ->  starr_ratio
+  position_treynorRatio  ->  treynor_ratio
+  position_txnCosts  ->  txn_costs
+  position_upCaptureRatio  ->  up_capture_ratio
+  position_upNumberRatio  ->  up_number_ratio
+  position_upPercentageRatio  ->  up_percentage_ratio
+  position_upsideDownsideVarianceRatio  ->  upside_downside_variance_ratio
+  position_upsideVariance  ->  upside_variance
+  position_value  ->  value
+  position_VaR  ->  value_at_risk
+  position_variance  ->  variance
+  position_weight  ->  weight
+* Added "metric" class with class methods "compute", "plot", "+", "-", "*", ":". This class can be obtained using any metric function ("beta", "alpha", ...) or "create_metric" function.
+* Added "position" class with class methods "show", "plot". This class can be obtained using "position_add" or "portfolio_getPosition" functions.
+* Added "forecast" class with class methods "forecast_input", "forecast_apply". This class can be obtained using "forecast_builder" function.
+  Forecasting supports linear heterogeneous autoregression (HAR) in a rolling window.
+* The following functions was replaced by "optimization_constraint" with other included function arguments:
+  optimization_constraint_allWeights
+  optimization_constraint_beta
+  optimization_constraint_CVaR
+  optimization_constraint_expectedReturn
+  optimization_constraint_modifiedSharpeRatio
+  optimization_constraint_portfolioValue
+  optimization_constraint_return
+  optimization_constraint_sharpeRatio
+  optimization_constraint_starrRatio
+  optimization_constraint_sumOfAbsWeights
+  optimization_constraint_VaR
+  optimization_constraint_variance
+  optimization_constraint_weight
+* Included arguments was changed in the "optimization_goal" function.
+* Auto-batching of lazy metrics is enabled by default. The following batch functions have been removed:
+  portfolio_startBatch
+  portfolio_endBatch
+
+
+
 PortfolioEffectHFT v1.6 (Release date: 2016-07-15)
 ==============
 

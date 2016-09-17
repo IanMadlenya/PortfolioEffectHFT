@@ -15,20 +15,14 @@ Prints summary table.
 \dontrun{
 dateStart = "2014-11-17 09:30:00"
 dateEnd = "2014-11-17 16:00:00"
-
-# create portfolio
 portfolio=portfolio_create(dateStart,dateEnd)
-portfolio_settings(portfolio,portfolioMetricsMode="price",windowLength = "3600s", 
-resultsSamplingInterval="60s")
-portfolio_addPosition(portfolio,'AAPL',100)
-portfolio_addPosition(portfolio,'C',300) 
-
-# set optimization goals and constraints
-optimizer=optimization_goal(portfolio,"Return","maximize")
-optimizer=optimization_constraint_beta(optimizer,"<=",0.5)
-
-# run optimization and print optimization details
-optimalPortfolio=optimization_run(optimizer) 
+portfolio_settings(portfolio,portfolioMetricsMode="price",windowLength = '3600s',
+resultsSamplingInterval='60s')
+positionAAPL=position_add(portfolio,'AAPL',100)
+positionC=position_add(portfolio,'C',300) 
+optimizer=optimization_goal(log_return(portfolio),"max")
+optimizer=optimization_constraint(optimizer,beta(portfolio),"<=",0.5)
+optimalPortfolio=optimization_run(optimizer)
 optimization_info(optimalPortfolio)
 }}
 \keyword{PortfolioEffectHFT}

@@ -9,55 +9,53 @@ timeStart="2014-10-02 09:30:00"
 timeEnd="2014-10-03 16:00:00"
 
 portfolio=portfolio_create("SPY", timeStart, timeEnd)
-portfolio_settings(portfolio,portfolioMetricsMode="price",jumpsModel='all')
-portfolio_addPosition(portfolio,"AAPL",100)
-portfolio_addPosition(portfolio,"GOOG",100)
-portfolio_addPosition(portfolio,"SPY",100)
+portfolio_settings(portfolio,portfolioMetricsMode="price",jumpsModel='all',resultsNAFilter='false')
+positionAAPL=position_add(portfolio,"AAPL",100)
+positionGOOG=position_add(portfolio,"GOOG",100)
+positionSPY=position_add(portfolio,"SPY",100)
 
-util_plot2d(position_jensensAlpha(portfolio,"AAPL"), title="Jensen's Alpha",legend="AAPL")+
-util_line2d(position_jensensAlpha(portfolio,"GOOG"), legend="GOOG")
-
+plot(alpha_jensens(positionAAPL),alpha_jensens(positionGOOG), title="Jensen's Alpha",legend=c("AAPL","GOOG"))
+# util_screenshot('R-alpha-decay1.jpg')
 # compute optimal weights according to the Treynor-Black model
-timeUTC=position_jensensAlpha(portfolio,"AAPL")[,1]
-alpha=cbind (position_jensensAlpha(portfolio,"AAPL")[,2], position_jensensAlpha(portfolio,"GOOG")[,2])
-variance=cbind(position_variance(portfolio,"AAPL")[,2], position_variance(portfolio,"GOOG")[,2])
+timeUTC=compute(alpha_jensens(positionAAPL))[[1]][,1]
+alpha=cbind (compute(alpha_jensens(positionAAPL))[[1]][,2], compute(alpha_jensens(positionGOOG))[[1]][,2])
+variance=cbind(compute(variance(positionAAPL))[[1]][,2], compute(variance(positionGOOG))[[1]][,2])
 
 treynorBlack=alpha/variance
 optimWeigth=treynorBlack/rowSums(abs(treynorBlack))
 
 # plot optimal position weights
-util_plot2d(cbind(timeUTC[!(is.na(optimWeigth[,1]))], optimWeigth[!(is.na(optimWeigth[,1])),1]), title="Optimal Weight",legend="AAPL")+
-util_line2d(cbind(timeUTC[!(is.na(optimWeigth[,2]))], optimWeigth[!(is.na(optimWeigth[,2])),2]), legend="GOOG")
-
+plot(create_metric(cbind(timeUTC[!(is.na(optimWeigth[,1]))],optimWeigth[!(is.na(optimWeigth[,1])),1]),"AAPL"),
+     create_metric(cbind(timeUTC[!(is.na(optimWeigth[,2]))], optimWeigth[!(is.na(optimWeigth[,2])),2]),"GOOG"), title="Optimal Weight")
+# util_screenshot('R-alpha-decay2.jpg')
 ################################################
 # Part 2- Compare two portfolios of equal value
 ################################################
 
 # compute optimal position quatities for a portfolio of given size
 portfolioCash=10000000
-optimPosition=portfolioCash*optimWeigth/cbind(position_price(portfolio,"AAPL")[,2],position_price(portfolio,"GOOG")[,2])
+optimPosition=portfolioCash*optimWeigth/cbind(compute(price(positionAAPL))[[1]][,2],compute(price(positionGOOG))[[1]][,2])
 
 portfolioSimple=portfolio_create("SPY", timeStart, timeEnd)
 portfolio_settings(portfolioSimple,portfolioMetricsMode="price",jumpsModel='all')
-portfolio_addPosition(portfolioSimple, "AAPL", quantity = (portfolioCash/2)%/%(position_price(portfolio,"AAPL")[,2]), time = timeUTC)
-portfolio_addPosition(portfolioSimple, "GOOG", quantity = (portfolioCash/2)%/%(position_price(portfolio,"GOOG")[,2]), time = timeUTC)
+positionAAPLSimple=position_add(portfolioSimple, "AAPL", quantity = (portfolioCash/2)%/%(compute(price(positionAAPL))[[1]][,2]), time = timeUTC)
+positionGOOGSimple=position_add(portfolioSimple, "GOOG", quantity = (portfolioCash/2)%/%(compute(price(positionGOOG))[[1]][,2]), time = timeUTC)
 
 portfolioOptimal=portfolio_create("SPY", timeStart, timeEnd)
 portfolio_settings(portfolioOptimal,portfolioMetricsMode="price",jumpsModel='all')
-portfolio_addPosition(portfolioOptimal,"AAPL", quantity = optimPosition[,1], time = timeUTC)
-portfolio_addPosition(portfolioOptimal,"GOOG", quantity = optimPosition[,2], time = timeUTC)
+positionAAPLOptimal=position_add(portfolioOptimal,"AAPL", quantity = optimPosition[,1], time = timeUTC)
+positionGOOGOptimal=position_add(portfolioOptimal,"GOOG", quantity = optimPosition[,2], time = timeUTC)
 
-meanAAPL=mean(position_price(portfolioOptimal,"AAPL")[,2])
-meanGOOG=mean(position_price(portfolioOptimal,"GOOG")[,2])
+meanAAPL=mean(compute(price(positionAAPLOptimal))[[1]][,2])
+meanGOOG=mean(compute(price(positionGOOGOptimal))[[1]][,2])
 
-portfolioSimpleAlpha=portfolio_jensensAlpha(portfolioSimple)
-portfolioOptimAlpha=portfolio_jensensAlpha(portfolioOptimal)
+portfolioSimpleAlpha=compute(alpha_jensens(portfolioSimple))[[1]]
+portfolioOptimAlpha=compute(alpha_jensens(portfolioOptimal))[[1]]
 
-util_plot2d(portfolioSimpleAlpha, title="Jensen's Alpha",legend="Simple portfolio")+
-util_line2d(portfolioOptimAlpha, legend="Optimal portfolio")+
+plot(alpha_jensens(portfolioSimple),alpha_jensens(portfolioOptimal), title="Jensen's Alpha",legend=c("Simple portfolio","Optimal portfolio"))+
 util_line2d(cbind(timeUTC, mean(portfolioSimpleAlpha[,2])), legend="Avg. of simple")+
 util_line2d(cbind(timeUTC, mean(portfolioOptimAlpha[,2])), legend="Avg. of optimal")
-
+# util_screenshot('R-alpha-decay3.jpg')
 ############################################################
 # Part 3 - Use ARMA-class model to forecast alpha-decay
 ############################################################
@@ -69,10 +67,10 @@ forecastErrorsSimple=NULL
 #use ARIMA(1,1,0). 1 second foreacast.
 for(x1 in seq(0,2,0.1)){
   x2=1-x1
-  position_setQuantity(portfolioSimple, "AAPL", (portfolioCash*x1)%/%meanAAPL)
-  position_setQuantity(portfolioSimple, "GOOG", (portfolioCash*x2)%/%meanGOOG)
+  set_quantity(positionAAPLSimple, (portfolioCash*x1)%/%meanAAPL)
+  set_quantity(asset=positionGOOGSimple, quantity=(portfolioCash*x2)%/%meanGOOG)
   
-  alpha=portfolio_jensensAlpha(portfolioSimple)
+  alpha=compute(alpha_jensens(portfolioSimple))[[1]]
   meanSimple=c(meanSimple,mean(alpha[,2]))
   
   forecastErrors=array(0,dim=100)
@@ -102,3 +100,4 @@ ggplot() + geom_point(data=resultdf, aes(x=err, y=mean,colour=legend),size=5) +
   xlab("Forecast Error(%)") + 
   ylab("Alpha mean") +
   util_plotTheme(base_size = 15)+util_colorScheme()
+# util_screenshot('R-alpha-decay4.jpg')

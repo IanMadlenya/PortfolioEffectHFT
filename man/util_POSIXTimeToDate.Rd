@@ -15,12 +15,11 @@
 data(aapl.data) 
 data(goog.data) 
 data(spy.data) 
-portfolio<-portfolio_create(priceDataIx=spy.data)
+portfolio=portfolio_create(priceDataIx=spy.data)
 portfolio_settings(portfolio,windowLength = '3600s',resultsSamplingInterval='60s')
-portfolio_addPosition(portfolio,'GOOG',100,priceData=goog.data)  
-portfolio_addPosition(portfolio,'AAPL',300,priceData=aapl.data) 
-portfolio_addPosition(portfolio,'SPY',150,priceData=spy.data)
-util_POSIXTimeToDate(portfolio_kurtosis(portfolio)[,1])
+positionGOOG=position_add(portfolio,'GOOG',100,priceData=goog.data)   
+positionAAPL=position_add(portfolio,'AAPL',300,priceData=aapl.data) 
+util_POSIXTimeToDate(compute(kurtosis(portfolio))[[1]][,1])
 }}
 \keyword{PortfolioEffectHFT}
 %\concept{ market data}

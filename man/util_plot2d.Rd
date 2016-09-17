@@ -31,12 +31,11 @@ title.size=2)
 data(aapl.data) 
 data(goog.data) 
 data(spy.data) 
-portfolio<-portfolio_create(priceDataIx=spy.data)
+portfolio=portfolio_create(priceDataIx=spy.data)
 portfolio_settings(portfolio,portfolioMetricsMode="price",windowLength = '3600s')
-portfolio_addPosition(portfolio,'GOOG',100,priceData=goog.data)  
-portfolio_addPosition(portfolio,'AAPL',300,priceData=aapl.data) 
-portfolio_addPosition(portfolio,'SPY',150,priceData=spy.data)
-util_plot2d(portfolio_return(portfolio),title="Portfolio return")
+positionGOOG=position_add(portfolio,'GOOG',100,priceData=goog.data)   
+positionAAPL=position_add(portfolio,'AAPL',300,priceData=aapl.data) 
+util_plot2d(compute(log_return(portfolio))[[1]],title="Portfolio return")
 }}
 \keyword{PortfolioEffectHFT}
 %\concept{plot market data, plot}

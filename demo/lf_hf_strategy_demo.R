@@ -20,8 +20,8 @@ MA=function(x,order){
 highFrequencyPortfolio=portfolio_create(fromTime=dateStart,toTime=dateEnd)
 lowFrequencyportfolio=portfolio_create(fromTime=dateStart,toTime=dateEnd)
 
-portfolio_addPosition(highFrequencyPortfolio,symbol,1)
-price=position_price(highFrequencyPortfolio,symbol)
+position=position_add(highFrequencyPortfolio,symbol,1)
+price=compute(price(position))[[1]]
 printTime=price[,1]
 
 highFrequencyStrategy=array(0,dim=NROW(price))
@@ -30,39 +30,37 @@ lowFrequencyStrategy=array(0,dim=NROW(price))
 lowFrequencyStrategy[price[,"value"]>MA(price[,"value"],800)]<-100
 
 # Add position GOOG to portfolios
-portfolio_addPosition(portfolio=highFrequencyPortfolio,symbol=symbol,quantity=highFrequencyStrategy,time=printTime)
-portfolio_addPosition(lowFrequencyportfolio,symbol=symbol,quantity=lowFrequencyStrategy,time=printTime)
+positionHF=position_add(portfolio=highFrequencyPortfolio,symbol=symbol,quantity=highFrequencyStrategy,time=printTime)
+positionLF=position_add(lowFrequencyportfolio,symbol=symbol,quantity=lowFrequencyStrategy,time=printTime)
 
 # Display general information about the portfolio at the end of a dataset
 print(highFrequencyPortfolio)
 print(lowFrequencyportfolio)
 plot(lowFrequencyportfolio)
-
+# util_screenshot('R-HFLF1.jpg')
 ############################################################
 # Part 2 - Holding intervals visualization
 ############################################################
  
-plot1<-util_ggplot(util_plot2d(position_quantity(highFrequencyPortfolio,symbol),title="High Frequency Portfolio Strategy",line_size=0.6))
-plot2<-util_ggplot(util_plot2d(position_quantity(lowFrequencyportfolio,symbol),title="Low Frequency Portfolio Strategy",line_size=0.6))
+plot1<-util_ggplot(plot(quantity(positionHF),title="High Frequency Portfolio Strategy",line_size=0.6))
+plot2<-util_ggplot(plot(quantity(positionLF),title="Low Frequency Portfolio Strategy",line_size=0.6))
 util_multiplot(plot1,plot2,cols=1)
-
+# util_screenshot('R-HFLF2.jpg')
 ############################################################
 # Part 3 - Trading strategy variance
 ############################################################
 
-util_plot2d(portfolio_variance(highFrequencyPortfolio),title="Variance, daily",legend="HF Portfolio")+
-util_line2d(portfolio_variance(lowFrequencyportfolio),legend="LF Portfolio")
-
+plot(variance(highFrequencyPortfolio),variance(lowFrequencyportfolio),title="Variance, daily",legend=c("HF Portfolio","LF Portfolio"))
+# util_screenshot('R-HFLF3.jpg')
 ############################################################
 # Part 4 - Trading strategy Value-at-Risk (daily, 95% c.i.)
 ############################################################
 
-util_plot2d(portfolio_VaR(highFrequencyPortfolio,0.95),title="Value at Risk in %, daily (95% c.i.)",legend="HF Portfolio")+
-util_line2d(portfolio_VaR(lowFrequencyportfolio,0.95),legend="LF Portfolio")
-
+plot(value_at_risk(highFrequencyPortfolio,0.95),value_at_risk(lowFrequencyportfolio,0.95),title="Value at Risk in %, daily (95% c.i.)",legend=c("HF Portfolio","LF Portfolio"))
+# util_screenshot('R-HFLF4.jpg')
 ############################################################
 # Part 5 - Trading strategy Sharpe ratio (daily)
 ############################################################
 
-util_plot2d(portfolio_sharpeRatio(highFrequencyPortfolio),title="Sharpe Ratio, daily",legend="HF Portfolio")+
-util_line2d(portfolio_sharpeRatio(lowFrequencyportfolio),legend="LF Portfolio")
+plot(sharpe_ratio(highFrequencyPortfolio),sharpe_ratio(lowFrequencyportfolio),title="Sharpe Ratio, daily",legend=c("HF Portfolio","LF Portfolio"))
+# util_screenshot('R-HFLF5.jpg')

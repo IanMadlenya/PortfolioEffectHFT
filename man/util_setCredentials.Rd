@@ -2,7 +2,7 @@
 \alias{util_setCredentials}
 \title{Set API Credentials}
 
-\usage{util_setCredentials(username,password,apiKey,hostname="snowfall04.snowfallsystems.com")
+\usage{util_setCredentials(username,password,apiKey,hostname="quant07.portfolioeffect.com")
 }
 
 \arguments{

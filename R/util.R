@@ -1,7 +1,7 @@
 util_getComputeTime<-function(time=c("timeMax","timeLeft")){
 	util_validate()
 	clientConnection=getOption('clientConnection')
-	result=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/MethodResult;", method="getComputeTimeLeft")
+	result=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="getComputeTimeLeft")
 	util_checkErrors(result)
 	result=.jcall(result,returnSig="S", method="getInfoParam",time[1])
 	return(result)
@@ -29,7 +29,7 @@ util_screenshot<-function(path, delaySec=15){
 	J("com.portfolioeffect.quant.client.util.Screenshots")$takeScreenshot(path)
 }
 
-util_setCredentials<-function(username,password,apiKey,hostname="snowfall04.snowfallsystems.com"){
+util_setCredentials<-function(username,password,apiKey,hostname="quant07.portfolioeffect.com"){
 	way<-switch(Sys.info()[['sysname']],
 			Windows= {paste(Sys.getenv("APPDATA"),"\\ice9",sep="")},
 			Linux  = {paste(Sys.getenv("HOME"),"/.ice9",sep="")},
@@ -53,12 +53,12 @@ util_setCredentials<-function(username,password,apiKey,hostname="snowfall04.snow
 		.jcall(clientConnection,returnSig="V", method="setPassword",password)
 		.jcall(clientConnection,returnSig="V", method="setApiKey",apiKey)
 		.jcall(clientConnection,returnSig="V", method="setHost",hostname)
-		resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/MethodResult;", method="restart")
+		resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
 		util_checkErrors(resultTemp)
 	}
 	util_validate()
 	clientConnection=getOption('clientConnection')
-	resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/MethodResult;", method="restart")
+	resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
 	util_checkErrors(resultTemp)
 }
 
@@ -146,8 +146,8 @@ util_checkErrors<-function(result){
 	if(getErrorStatus(result)){
 		Message=getErrorMessage(result)
 		n=nchar(Message)
-		c=paste(array("#",dim=min(abs(round(((n-15)/2)+0.01))),0),collapse="")
-		cc=paste(array("#",dim=min(n+(n-15)%%2),0),collapse="")
+		c=paste(array("#",dim=min(abs(round(((n-15)/2)+0.01)),0)),collapse="")
+		cc=paste(array("#",dim=min(n+(n-15)%%2,0)),collapse="")
 		k=paste(c," ERROR MESSAGE ",c,sep="")
 		stop(paste("",k,Message,cc,sep="\n"),call.=FALSE)
 	}
@@ -159,9 +159,14 @@ printStatus<-function(){
 	if(temp!=""){print(temp)}
 }
 
-getResult<-function(data){
+getResult<-function(data,metricClass=F){
 	util_checkErrors(data)
-	dataNames<-.jcall(data,returnSig="[S", method="getDataNames")
+
+	if(metricClass){
+	  dataNames<-c("time","value")	  
+	}else{
+	  dataNames<-.jcall(data,returnSig="[S", method="getDataNames")
+	}
 	result=NULL
 	for(dataName in dataNames){
 		dataType<-.jcall(data,returnSig="S", method="getDataType",dataName)
@@ -213,11 +218,12 @@ getResultValuesDoubleArrayWithTime<-function(result){
 }
 getResultValuesDouble2DArray<-function(portfolio,result){
 	result<-cbind(.jcall(result,returnSig="[J", method="getLongArray", "time"),.jcall(result,returnSig="[[D", method="getDoubleMatrix", "value", simplify=TRUE))
-	colnames(result)<-c("Time",portfolio_symbols(portfolio))
+	colnames(result)<-c("Time",position_list(portfolio))
 	return(result)
 
 }
 getResultValuesPortfolio<-function(result){
 	.jcall(result,returnSig="Lcom/portfolioeffect/quant/client/portfolio/Portfolio;", method="getPortfolio", "portfolio")
 }
+
 

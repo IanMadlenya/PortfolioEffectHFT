@@ -16,14 +16,14 @@
 data(aapl.data) 
 data(goog.data) 
 data(spy.data) 
-portfolio<-portfolio_create(priceDataIx=spy.data)
+portfolio=portfolio_create(priceDataIx=spy.data)
 portfolio_settings(portfolio,portfolioMetricsMode="price",windowLength = '3600s')
-portfolio_addPosition(portfolio,'GOOG',100,priceData=goog.data)  
-portfolio_addPosition(portfolio,'AAPL',300,priceData=aapl.data) 
-portfolio_addPosition(portfolio,'SPY',150,priceData=spy.data)
-util_plot2d(position_return(portfolio,'GOOG'),title="Positions returns",legend="GOOG")+
-util_line2d(position_return(portfolio,'AAPL'),legend="AAPL")+
-util_line2d(position_return(portfolio,'SPY'),legend="SPY")
+positionGOOG=position_add(portfolio,'GOOG',100,priceData=goog.data)   
+positionAAPL=position_add(portfolio,'AAPL',300,priceData=aapl.data) 
+positionSPY=position_add(portfolio,'SPY',500,priceData=spy.data) 
+plot(log_return(positionGOOG),title="Positions returns",legend="GOOG")+
+util_line2d(compute(log_return(positionAAPL))[[1]],legend="AAPL")+
+util_line2d(compute(log_return(positionSPY))[[1]],legend="SPY")
 }}
 \keyword{PortfolioEffectHFT}
 %\concept{plot market data, plot}
