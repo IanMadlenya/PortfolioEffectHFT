@@ -18,8 +18,8 @@ portfolio_settings(portfolio,portfolioMetricsMode="price",windowLength = '3600s'
 resultsSamplingInterval='60s')
 positionAAPL=position_add(portfolio,'AAPL',100)
 positionC=position_add(portfolio,'C',300) 
-optimizer=optimization_goal(portfolio,goal="Return", direction="maximize")
-optimizer=optimization_constraint_beta(optimizer,"<=",0.5)
+optimizer=optimization_goal(log_return(portfolio),"max")
+optimizer=optimization_constraint(optimizer,beta(portfolio),"<=",0.5)
 optimization_run(optimizer)
 }}
 \keyword{PortfolioEffectHFT}

@@ -1,7 +1,7 @@
 ############################################################
 # Part 1 - Define trading signals and construct portfolios
 ############################################################
-
+require(gridExtra)
 require(PortfolioEffectHFT)
 
 symbol = "GOOG"
@@ -44,7 +44,7 @@ plot(lowFrequencyportfolio)
  
 plot1<-util_ggplot(plot(quantity(positionHF),title="High Frequency Portfolio Strategy",line_size=0.6))
 plot2<-util_ggplot(plot(quantity(positionLF),title="Low Frequency Portfolio Strategy",line_size=0.6))
-util_multiplot(plot1,plot2,cols=1)
+grid.arrange(plot1,plot2,ncol=1)
 # util_screenshot('R-HFLF2.jpg')
 ############################################################
 # Part 3 - Trading strategy variance

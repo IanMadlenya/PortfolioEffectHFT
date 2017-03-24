@@ -1,7 +1,7 @@
 ############################################################
 # Part 1 - Define trading signals and construct portfolios
 ############################################################
-
+require(gridExtra)
 require(PortfolioEffectHFT)
 
 # Moving average
@@ -67,7 +67,7 @@ p2 = ggplot(lowFrequencyStrategyPlot, aes(x = "", y = positions, fill = Legends)
   geom_text(aes(x= 1,y = positions/2 + c(0, cumsum(positions)[-length(positions)]), label = paste(round(positions,digits =1)," minutes",sep="")), size=7,col="#d5e4eb")
 p2 = p2+coord_polar("y")+ ggtitle("Intraday holding period for\n low-frequency strategy")+
   util_plotTheme()+util_fillScheme()
-util_multiplot(p1,p2,cols=2)
+grid.arrange(p1,p2,ncol=2)
 # util_screenshot('R-holding1.jpg')
 ############################################################
 # Part 3 - Holding Intervals
@@ -95,7 +95,7 @@ lowFrequencyPortfolioAllDay
 
 plot1<-util_ggplot(plot(quantity(positionHFHO),title="High Frequency Portfolio Strategy",line_size=0.6))
 plot2<-util_ggplot(plot(quantity(positionLFHO),title="Low Frequency Portfolio Strategy",line_size=0.6))
-util_multiplot(plot1,plot2,cols=1)
+grid.arrange(plot1,plot2,ncol=1)
 # util_screenshot('R-holding2.jpg')
 ############################################################
 # Part 4 - Trading strategy variance

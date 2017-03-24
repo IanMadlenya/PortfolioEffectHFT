@@ -2,6 +2,7 @@
 \docType{class}
 \alias{position-class}
 \alias{plot,position,missing-method}
+\alias{plot,position,ANY-method}
 \alias{show,position-method}
 
 \title{Class \code{"position"}}
@@ -18,6 +19,7 @@ Container class for storing position parameters.
 \section{Methods}{
   \describe{
     \item{plot}{\code{signature(x = "position", y = "missing")}: ... }
+    \item{plot}{\code{signature(x = "position", y = "ANY")}: ... }
     \item{show}{\code{signature(object = "position")}: ... }
 	 }
 }

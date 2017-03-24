@@ -1,10 +1,7 @@
 \name{portfolio_availableSymbols}
 \alias{portfolio_availableSymbols}
 \title{Get All Symbol List}
-\usage{portfolio_availableSymbols(portfolio)
-}
-\arguments{
-  \item{portfolio}{Portfolio object created using \link[=portfolio_create]{portfolio_create( )} function}
+\usage{portfolio_availableSymbols()
 }
 \description{
 Returns a list of symbols .
@@ -14,10 +11,10 @@ Returns a list of symbols .
 \author{Kostin Andrey <andrey.kostin@portfolioeffect.com>}
 \examples{
 \dontrun{
-dateStart = "2014-11-17 09:30:00"
-dateEnd = "2014-11-17 16:00:00"
-portfolio=portfolio_create(dateStart,dateEnd)
-list=portfolio_availableSymbols(portfolio)
+portfolio=portfolio_create(fromTime="2014-10-02 09:30:00", toTime="2014-10-02 16:00:00")
+positionSPY=position_add(portfolio,'SPY',500)
+positionC=position_add(portfolio,'C',600)
+list=portfolio_availableSymbols()
 list[1:10,]
 }}
 \keyword{PortfolioEffectHFT}

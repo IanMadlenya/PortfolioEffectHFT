@@ -21,8 +21,8 @@
 \dontrun{
 data(aapl.data)
 data(goog.data)
-AAPL=create_metric(aapl.data)
-GOOG=create_metric(goog.data)
+AAPL=create_metric(aapl.data,'AAPL')
+GOOG=create_metric(goog.data,'GOOG')
 plot(AAPL,GOOG,legend=c('AAPL','GOOG'))
 }}
 \keyword{PortfolioEffectHFT}

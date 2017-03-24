@@ -59,7 +59,7 @@ lowFrequencyPortfolioWithoutTransactionCosts
 # Plot portfolio strategy buy and sell changing over time 
 plot1<-util_ggplot(plot(quantity(highFrequencyPortfolioWithTransactionCosts_GOOG),title="High Frequency Portfolio Strategy",line_size=0.6))
 plot2<-util_ggplot(plot(quantity(lowFrequencyPortfolioWithTransactionCosts_GOOG),title="Low Frequency Portfolio Strategy",line_size=0.6))
- util_multiplot(plot1,plot2,cols=1)
+grid.arrange(plot1,plot2,ncol=1)
  # util_screenshot('R-transactionCosts2.jpg')
 ############################################################
 # Part 3 - Trading strategy variance

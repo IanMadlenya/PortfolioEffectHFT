@@ -11,44 +11,46 @@ position_add<-function(portfolio,symbol,quantity,time,priceData){
 
 setMethod("position_add" ,c(portfolio="portfolio",symbol="character",quantity="ANY",time="missing",priceData="missing"),function(
   portfolio,symbol,quantity){
+  if(!portfolio@java$isSymbolsPresent(symbol)){
+    stop(paste('The symbol ',symbol,' is not available. Use the function portfolio_availableSymbols() to see a list of available characters.',sep=''))
+  }
   result<-.jnew("com.portfolioeffect.quant.client.portfolio.Position",portfolio@java,symbol, as.integer(quantity))
-  # result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="addPosition",symbol, as.integer(quantity))
-  # util_checkErrors(result)
   position=new("position", java=result,symbol=symbol,portfolio=portfolio@java)
   return(position)
 })
 
 setMethod("position_add" ,c(portfolio="portfolio",symbol="character",quantity="ANY",time="missing",priceData="matrix"),function(
   portfolio,symbol,quantity,priceData){
+  if(!portfolio@java$isSymbolsPresent(symbol)){
+    stop(paste('The symbol ',symbol,' is not available. Use the function portfolio_availableSymbols() to see a list of available characters.',sep=''))
+  }
   result<-.jnew("com.portfolioeffect.quant.client.portfolio.Position",portfolio@java,symbol, as.double(priceData[,2]), as.integer(quantity),.jlong(priceData[,1]))
-#   result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="addPosition",symbol, as.double(priceData[,2]), as.integer(quantity),.jlong(priceData[,1]))
-#   util_checkErrors(result)
   position=new("position", java=result,symbol=symbol,portfolio=portfolio@java)
   return(position)
 })
 
 setMethod("position_add" ,c(portfolio="portfolio",symbol="character",quantity="ANY",time="ANY",priceData="missing"),function(
   portfolio,symbol,quantity,time){
+  if(!portfolio@java$isSymbolsPresent(symbol)){
+    stop(paste('The symbol ',symbol,' is not available. Use the function portfolio_availableSymbols() to see a list of available characters.',sep=''))
+  }
   if(!is.numeric(time)){
     time<-util_dateToPOSIXTime(time)
   }
   result<-.jnew("com.portfolioeffect.quant.client.portfolio.Position",portfolio@java,symbol, as.integer(quantity),.jlong(time))
-  
-#   result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="addPosition",symbol, as.integer(quantity),.jlong(time))
-#   util_checkErrors(result)
   position=new("position", java=result,symbol=symbol,portfolio=portfolio@java)
   return(position)
 })
 
 setMethod("position_add" ,c(portfolio="portfolio",symbol="character",quantity="ANY",time="ANY",priceData="matrix"),function(
   portfolio,symbol,quantity,time,priceData){
+  if(!portfolio@java$isSymbolsPresent(symbol)){
+    stop(paste('The symbol ',symbol,' is not available. Use the function portfolio_availableSymbols() to see a list of available characters.',sep=''))
+  }
   if(!is.numeric(time)){
     time<-util_dateToPOSIXTime(time)
   }
   result<-.jnew("com.portfolioeffect.quant.client.portfolio.Position",portfolio@java,symbol, as.double(priceData[,2]),.jlong(priceData[,1]), as.integer(quantity),.jlong(time))
-  
-#   result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/......;", method="addPosition",symbol, as.double(priceData[,2]),.jlong(priceData[,1]), as.integer(quantity),.jlong(time))
-  # util_checkErrors(result)
   position=new("position", java=result,symbol=symbol,portfolio=portfolio@java)
   return(position)
 })
@@ -82,10 +84,9 @@ setMethod ("show" , "position" ,
            })
 
 
-util_summaryPositionPlot<-function (x,y){	
-  util_summaryPosition(x)
-}
-#util_summaryPlotBW<-function (x,y){	
-#	util_summary(x,bw=y)
-#}
-setMethod("plot" ,c(x="position",y="missing"),util_summaryPositionPlot)
+setMethod("plot" ,c(x="position",y="ANY"),function(x,y,...){
+  util_summaryPosition(x,y,...)
+})
+setMethod("plot" ,c(x="position",y="missing"),function(x,...){
+  util_summaryPosition(x,...)
+})

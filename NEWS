@@ -1,3 +1,13 @@
+PortfolioEffectHFT v1.8 (Release date: 2017-03-21)
+==============
+
+Changes:
+
+* Fixed a problem in plot functions.
+* Fixed a problem in 'util_getComputeTime' functions.
+* Added "font_size","line_size","bw","axis.text.size" and "title.size" output option to "plot" function "portfolio" and "position" class.
+* Included arguments was changed in the "portfolio_availableSymbols" function.
+
 PortfolioEffectHFT v1.7 (Release date: 2016-07-15)
 ==============
 

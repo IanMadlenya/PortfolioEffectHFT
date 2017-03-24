@@ -315,7 +315,7 @@ setMethod("+", signature(e1 = "portfolioPlot", e2 = "portfolioPlot"), function(e
 
 
 
-util_summaryPosition<-function(position,bw=FALSE){
+util_summaryPosition<-function(position,font_size=10,line_size=1.2,bw=FALSE,axis.text.size=1.5,title.size=2){
   util_validate()
 	Layout <- grid.layout(nrow = 4, ncol = 4,
 			widths = unit(c(2, 2, 2,2.27), array("null",dim=4)), 
@@ -326,10 +326,10 @@ util_summaryPosition<-function(position,bw=FALSE){
 	
 	temp=compute(value(position),weight(position),expected_return(position),variance(position))
 	
-	p1<-util_ggplot(plot(value(position),title='Position value ($)',bw=bw))
-	p2<-util_ggplot(plot(weight(position),title='Position weight (%)',bw=bw))
-	p3<-util_ggplot(plot(expected_return(position),title="Position Expected Return",bw=bw))+geom_hline(yintercept=0,col='red',size=0.5)
-	p4<-util_ggplot(plot(variance(position),title="Position Variance",bw=bw))
+	p1<-util_ggplot(plot(value(position),title='Position value ($)',,font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))
+	p2<-util_ggplot(plot(weight(position),title='Position weight (%)',,font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))
+	p3<-util_ggplot(plot(expected_return(position),title="Position Expected Return",,font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))+geom_hline(yintercept=0,col='red',size=0.5)
+	p4<-util_ggplot(plot(variance(position),title="Position Variance",,font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))
 
 	
 	print(p1, vp = viewport(layout.pos.row = 1,
@@ -342,13 +342,29 @@ util_summaryPosition<-function(position,bw=FALSE){
 					layout.pos.col = 1:4))
 }
 
-util_summary<-function(portfolio,bw=FALSE){
+util_summaryPlot=function(...){
+data=list(...)
+temp=NULL
+for(i in 1:length(data)){
+  if(class(data[[i]])=="portfolio"){
+    temp=data[[i]]
+  }}
+util_summary(temp,
+             font_size=if(is.null(data[["font_size"]])){10}else{data$font_size},
+             line_size=if(is.null(data[["line_size"]])){1.2}else{data$line_size},
+             bw=if(is.null(data[["bw"]])){FALSE}else{data$bw},
+             axis.text.size=if(is.null(data[["axis.text.size"]])){1.5}else{data$axis.text.size},
+             title.size=if(is.null(data[["title.size"]])){2}else{data$title.size})
+}
+
+util_summary<-function(portfolio,font_size=10,line_size=1.2,bw=FALSE,axis.text.size=1.5,title.size=2){
   util_validate()
   portfolioTemp=portfolio_create(portfolio)
   set<-portfolio_getSettings(portfolioTemp)
   Layout <- grid.layout(nrow = 4, ncol = 4,
-                        widths = unit(c(2, 2, 2,2.27), array("null",dim=4)), 
-                        heights = unit(c(array(3,dim=2),2.5,3.19), array("null",dim=4)))
+                        widths =unit(c(2, 2, 2,2.27), array("null",dim=4)), 
+                        heights =unit(c(array(3,dim=2),2.5,3.19), array("null",dim=4))
+                        )
   
   grid.newpage()
   pushViewport(viewport(layout = Layout))
@@ -358,9 +374,9 @@ util_summary<-function(portfolio,bw=FALSE){
   .jcall(portfolioTemp@java,returnSig="V", method="createCallGroup",as.integer(1+length(symbols)))
   temp=compute(value(portfolioTemp),	expected_return(portfolioTemp),variance(portfolioTemp))
   
-  p1<-util_ggplot(plot(value(portfolioTemp),title='Portfolio value ($)',bw=bw))
-  p4<-util_ggplot(plot(expected_return(portfolioTemp),title="Portfolio Expected Return",bw=bw))+geom_hline(yintercept=0,col='red',size=0.5)
-  p5<-util_ggplot(plot(variance(portfolioTemp),title="Portfolio Variance",bw=bw))
+  p1<-util_ggplot(plot(value(portfolioTemp),title='Portfolio value ($)',font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))
+  p4<-util_ggplot(plot(expected_return(portfolioTemp),title="Portfolio Expected Return",font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))+geom_hline(yintercept=0,col='red',size=0.5)
+  p5<-util_ggplot(plot(variance(portfolioTemp),title="Portfolio Variance",font_size=font_size,line_size=line_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size))
   
   tempSet$resultsSamplingInterval='last'
   portfolio_settings(portfolioTemp,tempSet)
@@ -408,7 +424,7 @@ util_summary<-function(portfolio,bw=FALSE){
     xlab(NULL) + 
     ylab(NULL) +
     xlim(rev(symbols))+
-    ggtitle('Position Weight')+util_plotTheme(axis.text.size=1.5,bw=bw) 
+    ggtitle('Position Weight')+util_plotTheme(base_size=font_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size) 
   
   
   
@@ -420,7 +436,7 @@ util_summary<-function(portfolio,bw=FALSE){
     xlab(NULL) + 
     ylab(NULL) +
     xlim(rev(symbols))+
-    ggtitle('Position Profit ($)')+util_plotTheme(axis.text.size=1.5,bw=bw) + scale_fill_brewer()
+    ggtitle('Position Profit ($)')+util_plotTheme(base_size=font_size,bw=bw,axis.text.size=axis.text.size,title.size=title.size) + scale_fill_brewer()
   
   portfolio_settings(portfolioTemp,set)
   
@@ -437,7 +453,7 @@ util_summary<-function(portfolio,bw=FALSE){
 }
 
 util_plotTheme<-function (base_size = 10, base_family = "sans", horizontal = TRUE, 
-                            dkpanel = FALSE, bw = FALSE,axis.text.size=1.5,title.size=2, has.subtitle = FALSE) 
+                          dkpanel = FALSE, bw = FALSE,axis.text.size=1.5,title.size=2, has.subtitle = FALSE) 
 {
   if(bw){
     bgcolors <- c("white","#B2BFCB","gray")	
@@ -456,20 +472,20 @@ util_plotTheme<-function (base_size = 10, base_family = "sans", horizontal = TRU
                axis.title = element_text(size = rel(1)), axis.title.x = element_text(size=base_size*1.5), 
                axis.title.y = element_text(angle = 90,size=base_size*1.5), axis.ticks.length = unit(base_size * 
                                                                                                       0.5, "points"),
-               legend.margin = unit(-0.1, "cm"), legend.key = element_rect(linetype = 0,fill = bgcolors["ebg"]), 
+               legend.margin = margin(-0.1, unit ="cm"), legend.key = element_rect(linetype = 0,fill = bgcolors["ebg"]), 
                legend.key.size = unit(1.2, "lines"), legend.key.height = NULL, 
                legend.key.width = NULL, legend.text = element_text(size = rel(1.25)), 
                legend.text.align = NULL,legend.title=element_blank(), legend.title.align = NULL,
                legend.direction = NULL, legend.justification = "center", legend.position = "top",
                panel.background = element_rect(linetype = 0,fill = bgcolors["ebg"]), panel.border = element_blank(), 
                panel.grid.major = element_line(colour = bgcolors["line"], size = rel(1)), 
-               panel.grid.minor = element_blank(), panel.margin = unit(0.25, 
+               panel.grid.minor = element_blank(), panel.spacing = unit(0.25, 
                                                                        "lines"), strip.background = element_rect(fill = bgcolors["ebg"], 
                                                                                                                  colour = NA, linetype = 0), strip.text = element_text(size = rel(1.25)), 
                strip.text.x = element_text(), strip.text.y = element_text(angle = -90), 
                plot.background = element_rect(fill = bgcolors["ebg"], 
-                                              colour = NA), plot.title = element_text(size = rel(title.size)), plot.margin = unit(c(0, 
-                                                                                                                       5, 6, 5) * 2, "points"))
+                                              colour = NA), plot.title = element_text(size = rel(title.size),hjust = 0.5), plot.margin = unit(c(2, 
+                                                                                                                                    5, 6, 5) * 2, "points"))
   if (horizontal) {
     ret <- ret + theme(panel.grid.major.x = element_blank())
   }

@@ -1,9 +1,9 @@
 util_getComputeTime<-function(time=c("timeMax","timeLeft")){
 	util_validate()
 	clientConnection=getOption('clientConnection')
-	result=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="getComputeTimeLeft")
-	util_checkErrors(result)
-	result=.jcall(result,returnSig="S", method="getInfoParam",time[1])
+	requestToServer=.jnew("com.portfolioeffect.quant.client.RequestToServer")
+	result=requestToServer$getComputeTimeLeft(clientConnection)
+	result=result$getValueInt(time[1])
 	return(result)
 }
 
@@ -29,37 +29,70 @@ util_screenshot<-function(path, delaySec=15){
 	J("com.portfolioeffect.quant.client.util.Screenshots")$takeScreenshot(path)
 }
 
+# util_setCredentials<-function(username,password,apiKey,hostname="quant07.portfolioeffect.com"){
+# 	way<-switch(Sys.info()[['sysname']],
+# 			Windows= {paste(Sys.getenv("APPDATA"),"\\ice9",sep="")},
+# 			Linux  = {paste(Sys.getenv("HOME"),"/.ice9",sep="")},
+# 			Darwin = {paste(Sys.getenv("HOME"),"/.ice9",sep="")})
+# 	way<-gsub("\\","/",way,fixed = T)
+# 	way<-paste0(way, "/data")
+# 	if (!file.exists(way)){
+# 		dir.create(way,recursive=TRUE)
+# 	}
+# 	unlink(paste0(way,"/login.RData"), recursive = TRUE, force = FALSE)
+# 	login<-c(username,password,apiKey,hostname)
+# 	save(login, file=paste0(way, "/login.RData"))
+# 	rm(login)
+# 	if(!is.null(options('clientConnection')$clientConnection)){
+# 		clientConnection=getOption('clientConnection')
+# 		if(is.null(clientConnection)){
+# 			options("clientConnection"=.jnew("com.portfolioeffect.quant.client.ClientConnection"))
+# 		}
+# 		.jcall(clientConnection,returnSig="V", method="setUsername",username)
+# 		.jcall(clientConnection,returnSig="V", method="setPassword",password)
+# 		.jcall(clientConnection,returnSig="V", method="setApiKey",apiKey)
+# 		.jcall(clientConnection,returnSig="V", method="setHost",hostname)
+# 		resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
+# 		util_checkErrors(resultTemp)
+# 	}
+# 	util_validate()
+# 	clientConnection=getOption('clientConnection')
+# 	resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
+# 	util_checkErrors(resultTemp)
+# }
+
 util_setCredentials<-function(username,password,apiKey,hostname="quant07.portfolioeffect.com"){
-	way<-switch(Sys.info()[['sysname']],
-			Windows= {paste(Sys.getenv("APPDATA"),"\\ice9",sep="")},
-			Linux  = {paste(Sys.getenv("HOME"),"/.ice9",sep="")},
-			Darwin = {paste(Sys.getenv("HOME"),"/.ice9",sep="")})
-	way<-gsub("\\","/",way,fixed = T)
-	way<-paste0(way, "/data")
-	if (!file.exists(way)){
-		dir.create(way,recursive=TRUE)
-	}
-	unlink(paste0(way,"/login.RData"), recursive = TRUE, force = FALSE)
-	login<-c(username,password,apiKey,hostname)
-	save(login, file=paste0(way, "/login.RData"))
-	rm(login)
-	if(!is.null(options('clientConnection')$clientConnection)){
-		clientConnection=getOption('clientConnection')
-		if(clientConnection == NULL){
-			options("clientConnection"=.jnew("com.portfolioeffect.quant.client.ClientConnection"))
-			is.null(options('clientConnection')$clientConnection)
-		}
-		.jcall(clientConnection,returnSig="V", method="setUsername",username)
-		.jcall(clientConnection,returnSig="V", method="setPassword",password)
-		.jcall(clientConnection,returnSig="V", method="setApiKey",apiKey)
-		.jcall(clientConnection,returnSig="V", method="setHost",hostname)
-		resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
-		util_checkErrors(resultTemp)
-	}
-	util_validate()
-	clientConnection=getOption('clientConnection')
-	resultTemp=.jcall(clientConnection,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="restart")
-	util_checkErrors(resultTemp)
+  way<-switch(Sys.info()[['sysname']],
+              Windows= {paste(Sys.getenv("APPDATA"),"\\ice9",sep="")},
+              Linux  = {paste(Sys.getenv("HOME"),"/.ice9",sep="")},
+              Darwin = {paste(Sys.getenv("HOME"),"/.ice9",sep="")})
+  way<-gsub("\\","/",way,fixed = T)
+  way<-paste0(way, "/data")
+  if (!file.exists(way)){
+    dir.create(way,recursive=TRUE)
+  }
+  unlink(paste0(way,"/login.RData"), recursive = TRUE, force = FALSE)
+  login<-c(username,password,apiKey,hostname)
+  save(login, file=paste0(way, "/login.RData"))
+  rm(login)
+  if(!is.null(options('clientConnection')$clientConnection)){
+    clientConnection=getOption('clientConnection')
+    if(is.null(clientConnection)){
+      options("clientConnection"=.jnew("com.portfolioeffect.quant.client.ClientConnection"))
+      clientConnection=getOption('clientConnection')
+    }else{
+      clientConnection$stop()
+    }
+  }else{
+    clientConnection=getOption('clientConnection')
+  }
+  util_validate()
+  .jcall(clientConnection,returnSig="V", method="setUsername",username)
+  .jcall(clientConnection,returnSig="V", method="setPassword",password)
+  .jcall(clientConnection,returnSig="V", method="setApiKey",apiKey)
+  .jcall(clientConnection,returnSig="V", method="setHost",hostname)
+  resultTemp=clientConnection$restart()
+  util_checkErrors(resultTemp)
 }
 
 util_cleanCredentials<-function(){
@@ -121,24 +154,15 @@ util_validate<- function(argList=NULL) {
 		
 	}else{
 		clientConnection=getOption('clientConnection')
-		if(clientConnection==NULL){
+		if(is.null(clientConnection)){
 		options("clientConnection"=.jnew("com.portfolioeffect.quant.client.ClientConnection"))
-		clientConnection=getOption('clientConnection')
+		clientConnection=getOption('clientConnection')}
 			login<-NULL;
 			load(way)
 			.jcall(clientConnection,returnSig="V", method="setUsername",login[1])
 			.jcall(clientConnection,returnSig="V", method="setPassword",login[2])
 			.jcall(clientConnection,returnSig="V", method="setApiKey",login[3])
 			.jcall(clientConnection,returnSig="V", method="setHost",login[4])
-		}
-		else {
-			login<-NULL;
-			load(way)
-			.jcall(clientConnection,returnSig="V", method="setUsername",login[1])
-			.jcall(clientConnection,returnSig="V", method="setPassword",login[2])
-			.jcall(clientConnection,returnSig="V", method="setApiKey",login[3])
-			.jcall(clientConnection,returnSig="V", method="setHost",login[4])
-		}
 	}
 }
 

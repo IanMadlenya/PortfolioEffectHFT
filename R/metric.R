@@ -33,7 +33,7 @@ compute=function(...){
 data=c(...)
 result=NULL
 for(i in 1:length(data)){
-result[[data[[i]]@java$getDescription()]]=getResult(data[[i]]@java,metricClass=T)
+result[[i]]=getResult(data[[i]]@java,metricClass=T)
 }
 return(result)}
 
@@ -90,8 +90,11 @@ setMethod("+", signature(e1 = "metric", e2 = "metric"), function(e1, e2) {
   temp=compute(e1,e2)
   temp1=temp[[1]]
   temp2=temp[[2]]
+  temp1=temp1[!duplicated(temp1[,1]),]
+  temp2=temp2[!duplicated(temp2[,1]),]
   temp1=temp1[temp1[,1] %in% temp2[,1],]
-  temp2=temp2[temp2[,1] %in% temp1[,1],] 
+  temp2=temp2[temp2[,1] %in% temp1[,1],]
+  
   builder=.jnew("com.portfolioeffect.quant.client.result.SavedMetric",as.double(temp1[,2]+temp2[,2]),.jlong(temp1[,1]))
   builder$setDescription(paste("New",e1@java$getDescription()))
   return(new('metric',java=builder))
@@ -101,6 +104,8 @@ setMethod("-", signature(e1 = "metric", e2 = "metric"), function(e1, e2) {
   temp=compute(e1,e2)
   temp1=temp[[1]]
   temp2=temp[[2]]
+  temp1=temp1[!duplicated(temp1[,1]),]
+  temp2=temp2[!duplicated(temp2[,1]),]
   temp1=temp1[temp1[,1] %in% temp2[,1],]
   temp2=temp2[temp2[,1] %in% temp1[,1],] 
   builder=.jnew("com.portfolioeffect.quant.client.result.SavedMetric",as.double(temp1[,2]-temp2[,2]),.jlong(temp1[,1]))
@@ -112,6 +117,8 @@ setMethod("*", signature(e1 = "metric", e2 = "metric"), function(e1, e2) {
   temp=compute(e1,e2)
   temp1=temp[[1]]
   temp2=temp[[2]]
+  temp1=temp1[!duplicated(temp1[,1]),]
+  temp2=temp2[!duplicated(temp2[,1]),]
   temp1=temp1[temp1[,1] %in% temp2[,1],]
   temp2=temp2[temp2[,1] %in% temp1[,1],] 
   builder=.jnew("com.portfolioeffect.quant.client.result.SavedMetric",as.double(temp1[,2]*temp2[,2]),.jlong(temp1[,1]))
@@ -123,6 +130,8 @@ setMethod("/", signature(e1 = "metric", e2 = "metric"), function(e1, e2) {
   temp=compute(e1,e2)
   temp1=temp[[1]]
   temp2=temp[[2]]
+  temp1=temp1[!duplicated(temp1[,1]),]
+  temp2=temp2[!duplicated(temp2[,1]),]
   temp1=temp1[temp1[,1] %in% temp2[,1],]
   temp2=temp2[temp2[,1] %in% temp1[,1],] 
   builder=.jnew("com.portfolioeffect.quant.client.result.SavedMetric",as.double(temp1[,2]/temp2[,2]),.jlong(temp1[,1]))

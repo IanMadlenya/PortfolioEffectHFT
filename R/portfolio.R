@@ -68,15 +68,12 @@ setMethod ("show" , "portfolio" ,
 			print(printMatrix2)
 })
 
-
-util_summaryPlot<-function (x,y){	
-util_summary(x)
-}
-#util_summaryPlotBW<-function (x,y){	
-#	util_summary(x,bw=y)
-#}
-setMethod("plot" ,c(x="portfolio",y="missing"),util_summaryPlot)
-#setMethod("plot" ,c(x="portfolio",y='logical'),util_summaryPlotBW)
+setMethod("plot" ,c(x="portfolio",y="ANY"),function(x,y,...){
+  util_summaryPlot(x,y,...)
+})
+setMethod("plot" ,c(x="portfolio",y="missing"),function(x,...){
+  util_summaryPlot(x,...)
+})
 
 portfolio_defaultSettings<-function(portfolio){
 	portfolio_settings(portfolio,portfolioMetricsMode="portfolio",
@@ -211,11 +208,11 @@ portfolio_create<-function(index=NULL,fromTime=NULL,toTime=NULL,priceDataIx=NULL
 	}
 }
 
-position_quantity<-function(portfolio,symbol){
-	result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="getPositionQuantity",symbol)  
-	util_checkErrors(result)
-	result<-getResultValuesDoubleArrayWithTime(result)
-	return(result)}
+# position_quantity<-function(portfolio,symbol){
+# 	result<-.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="getPositionQuantity",symbol)  
+# 	util_checkErrors(result)
+# 	result<-getResultValuesDoubleArrayWithTime(result)
+# 	return(result)}
 
 position_list<-function(portfolio){
 	result<-.jcall(portfolio@java,returnSig="[S", method="getSymbols")  
@@ -243,9 +240,12 @@ position_list<-function(portfolio){
 # }
 
 
-portfolio_availableSymbols<-function(portfolio){
-	result=.jcall(portfolio@java,returnSig="Lcom/portfolioeffect/quant/client/result/Metric;", method="getAllSymbolsList")
-	result<-getResult(result)
+portfolio_availableSymbols<-function(){
+  util_validate()
+  clientConnection=getOption('clientConnection')
+  requestToServer=.jnew("com.portfolioeffect.quant.client.RequestToServer")
+  result=requestToServer$getAllSymbolsList(clientConnection)
+  result<-getResult(result)
 	return(result)
 }
 

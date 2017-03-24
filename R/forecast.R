@@ -9,7 +9,7 @@ forecast_builder=function(asset,model=c("EWMA","HAR"), window="20d", step = "1d"
   forecastBuilderM$setRegressionUpdateInterval(updateInterval);
   forecastBuilderM$setForecastStep(step);
   forecastBuilderM$setValueType(valueType);
-  forecastBuilderM$setTimeShiftEnable(T);
+  forecastBuilderM$setTimeShiftEnable(valueType=="forecast");
   forecastBuilderM$setDependentVariable(asset@java);
   forecastBuilderM$setForecastModel(switch(model[1],
                                           HAR="[{\"windowLength\":\"1d\"},{\"windowLength\":\"5d\"},{\"windowLength\":\"21d\"}]",
